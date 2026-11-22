@@ -1574,11 +1574,17 @@ function mergeStates(a, b) {
   if (!b || typeof b !== "object") return a;
   const newer = (b.ts || 0) >= (a.ts || 0) ? b : a;
   const older = newer === b ? a : b;
+  const ta = Number(a.pu_best_ts || 0), tb = Number(b.pu_best_ts || 0);
+  let puBest, puBestTs;
+  if (ta > tb) { puBest = Number(a.pu_best || 1); puBestTs = ta; }
+  else if (tb > ta) { puBest = Number(b.pu_best || 1); puBestTs = tb; }
+  else { puBest = Math.max(Number(a.pu_best || 1), Number(b.pu_best || 1)); puBestTs = ta; }
   const out = {
     v: 1,
     ts: Math.max(a.ts || 0, b.ts || 0),
     targets: Object.assign({}, older.targets || {}, newer.targets || {}),
-    pu_best: Math.max(a.pu_best || 1, b.pu_best || 1),
+    pu_best: puBest,
+    pu_best_ts: puBestTs,
     vitals: Object.assign({}, older.vitals || {}, newer.vitals || {}),
     trips: (newer.trips && newer.trips.length) ? newer.trips : (older.trips || []),
     wb: [],
@@ -1654,6 +1660,7 @@ function compactStateForTransport(st) {
     ts: st.ts || Math.floor(Date.now() / 1000),
     targets: st.targets,
     pu_best: st.pu_best,
+    pu_best_ts: st.pu_best_ts || 0,
     vitals: st.vitals,
     trips: st.trips || [],
     wb: wbCompact,
