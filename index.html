@@ -707,7 +707,11 @@
       <circle cx="14" cy="14" r="10.2" fill="none" stroke="#2B5F49" stroke-width="2.1" stroke-dasharray="55 10" stroke-linecap="round"/>
     </svg>
     <div class="locked-title">体律</div>
-    <p class="locked-sub">此页面不含任何公开个人数据。<br />请通过你的专属私密链接打开，打开一次后本设备会自动记住。</p>
+    <p class="locked-sub">此页面不含任何公开个人数据。<br />请用你的专属私密链接打开，或把专属链接粘在下方即可解锁本设备。</p>
+    <div style="width:100%; margin-top:20px; display:flex; gap:8px;">
+      <input id="unlock-link-in" type="text" placeholder="粘贴专属链接…" style="flex:1; height:40px; padding:0 12px; border:1px solid var(--hairline-strong); border-radius:8px; background:var(--sheet); color:var(--sumi); font-size:13.5px;" />
+      <button class="btn-primary" style="height:40px; padding:0 18px; font-size:13.5px;" onclick="unlockFromInput()">解锁</button>
+    </div>
   </div>
 
   <!-- Main Authenticated App -->
@@ -975,34 +979,113 @@ function bytesToB64u(bytes) {
 let VAULT = null;
 let CRYPTO_KEY = null;
 
-async function initVault() {
-  // Check URL hash first: #t=<topic>&k=<key>
-  const hash = (window.location.hash || "").replace(/^#/, "");
-  if (hash) {
-    const params = new URLSearchParams(hash);
-    const t = params.get("t");
-    const k = params.get("k");
-    if (t && k && t.length >= 16 && k.length >= 40) {
-      VAULT = { t, k };
-      try { localStorage.setItem(VAULT_STORAGE_KEY, JSON.stringify(VAULT)); } catch (e) {}
-      try { history.replaceState(null, "", window.location.pathname + window.location.search); } catch (e) {}
+async function saveVaultEverywhere(v) {
+  try { localStorage.setItem(VAULT_STORAGE_KEY, JSON.stringify(v)); } catch (e) {}
+  try {
+    if ("caches" in window) {
+      const c = await caches.open("zenbody-vault-cache");
+      await c.put("./__vault_key__", new Response(JSON.stringify(v), { headers: { "Content-Type": "application/json" } }));
     }
+  } catch (e) {}
+}
+
+async function loadVaultFromCache() {
+  try {
+    if ("caches" in window) {
+      const c = await caches.open("zenbody-vault-cache");
+      const r = await c.match("./__vault_key__");
+      if (r) return await r.json();
+    }
+  } catch (e) {}
+  return null;
+}
+
+function updateDynamicManifest(v) {
+  try {
+    const base = window.location.origin + window.location.pathname.replace(/index\.html$/, "");
+    const manifestObj = {
+      name: "体律",
+      short_name: "体律",
+      description: "极简禅意动态体能与体脂节律",
+      start_url: `${base}#t=${encodeURIComponent(v.t)}&k=${encodeURIComponent(v.k)}`,
+      scope: base,
+      display: "standalone",
+      orientation: "portrait-primary",
+      background_color: "#F5F2EB",
+      theme_color: "#F5F2EB",
+      icons: [
+        { src: `${base}icon-192.png`, sizes: "192x192", type: "image/png", purpose: "any maskable" },
+        { src: `${base}icon-512.png`, sizes: "512x512", type: "image/png", purpose: "any maskable" }
+      ]
+    };
+    const link = document.querySelector('link[rel="manifest"]');
+    if (link) {
+      link.setAttribute("href", "data:application/manifest+json;charset=utf-8," + encodeURIComponent(JSON.stringify(manifestObj)));
+    }
+  } catch (e) {}
+}
+
+function parseVaultFromStr(str) {
+  if (!str) return null;
+  const idx = str.indexOf("#");
+  const raw = idx >= 0 ? str.slice(idx + 1) : str.replace(/^#/, "");
+  const params = new URLSearchParams(raw);
+  const t = params.get("t");
+  const k = params.get("k");
+  if (t && k && t.length >= 16 && k.length >= 40) return { t, k };
+  return null;
+}
+
+async function initVault() {
+  // 1. Check URL hash first: #t=<topic>&k=<key> (keep hash intact so iOS/Android Add-to-Home-Screen preserves it!)
+  const fromHash = parseVaultFromStr(window.location.hash || "");
+  if (fromHash) {
+    VAULT = fromHash;
+    await saveVaultEverywhere(VAULT);
   }
+  // 2. Fallback to localStorage
   if (!VAULT) {
     try {
       const saved = localStorage.getItem(VAULT_STORAGE_KEY);
       if (saved) VAULT = JSON.parse(saved);
     } catch (e) {}
   }
+  // 3. Fallback to Cache Storage (bridging Safari <-> standalone on iOS)
+  if (!VAULT) {
+    const cached = await loadVaultFromCache();
+    if (cached && cached.t && cached.k) {
+      VAULT = cached;
+      try { localStorage.setItem(VAULT_STORAGE_KEY, JSON.stringify(VAULT)); } catch (e) {}
+    }
+  }
   if (!VAULT || !VAULT.t || !VAULT.k) return false;
   try {
     const rawKey = b64uToBytes(VAULT.k);
     CRYPTO_KEY = await crypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+    updateDynamicManifest(VAULT);
     return true;
   } catch (e) {
     return false;
   }
 }
+
+async function unlockFromInput() {
+  const el = document.getElementById("unlock-link-in");
+  const v = parseVaultFromStr((el && el.value || "").trim());
+  if (!v) {
+    showToast("链接格式不对，请粘贴完整专属链接");
+    return;
+  }
+  await saveVaultEverywhere(v);
+  window.location.hash = `t=${encodeURIComponent(v.t)}&k=${encodeURIComponent(v.k)}`;
+  window.location.reload();
+}
+
+window.addEventListener("hashchange", () => {
+  if (!CRYPTO_KEY && parseVaultFromStr(window.location.hash || "")) {
+    window.location.reload();
+  }
+});
 
 async function encryptPayload(obj) {
   const iv = crypto.getRandomValues(new Uint8Array(12));
