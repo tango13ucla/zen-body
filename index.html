@@ -1,0 +1,2018 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#F5F2EB" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="体律" />
+<link rel="manifest" href="./manifest.json" />
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+<link rel="apple-touch-icon" href="./icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+JP:wght@500;600&display=swap" rel="stylesheet" />
+<title>体律</title>
+<style>
+  :root {
+    /* Traditional Japanese Pigments: 生成り · 白練 · 墨 · 苔色 · 黄土 · 弁柄 */
+    --washi: #F5F2EB;
+    --sheet: #FCFBF8;
+    --sumi: #1C1B18;
+    --ink-2: #48443C;
+    --ink-3: #847E72;
+    --hairline: rgba(28, 27, 24, 0.09);
+    --hairline-strong: rgba(28, 27, 24, 0.18);
+    --track: #E5E0D5;
+    --moss: #2B5F49;
+    --moss-solid: #2D7A56;
+    --moss-soft: rgba(43, 95, 73, 0.09);
+    --ochre: #A87633;
+    --bengara: #9E3E36;
+    --sans: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", -apple-system, BlinkMacSystemFont, sans-serif;
+    --serif: "Hiragino Mincho ProN", "YuMincho", "Noto Serif JP", Georgia, serif;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: var(--washi);
+    color: var(--sumi);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: calc(14px + env(safe-area-inset-top)) 26px calc(14px + env(safe-area-inset-bottom));
+  }
+
+  .zen-shell {
+    width: 100%;
+    max-width: 496px;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Strict portrait guard on mobile */
+  html.fp {
+    width: var(--fp-w);
+    height: var(--fp-h);
+    overflow: hidden;
+  }
+  html.fp body {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--fp-h) !important;
+    height: var(--fp-w) !important;
+    padding-left: 26px;
+    padding-right: 26px;
+    transform-origin: 0 0;
+  }
+  html.fp-90 body { transform: translateY(var(--fp-h)) rotate(-90deg); }
+  html.fp-270 body { transform: translateX(var(--fp-w)) rotate(90deg); }
+
+  button {
+    font-family: inherit;
+    white-space: nowrap;
+    background: none;
+    border: none;
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  input {
+    font-family: inherit;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  /* Desktop Header (hidden on mobile per 上看下点) */
+  .zen-header {
+    display: none;
+    flex-shrink: 0;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 10px;
+  }
+  .zen-brand {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: var(--sumi);
+  }
+  .zen-brand span {
+    font-family: var(--sans);
+    font-size: 12.5px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--ink-3);
+    margin-left: 10px;
+  }
+  .zen-nav {
+    display: flex;
+    gap: 22px;
+  }
+  .nav-link {
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--ink-3);
+    padding: 4px 0;
+    position: relative;
+    transition: color 0.2s ease;
+  }
+  .nav-link.active {
+    color: var(--sumi);
+    font-weight: 600;
+  }
+  .nav-link.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 1.5px;
+    background: var(--sumi);
+  }
+
+  /* Top Horizon Bar: 3 Zen Enso Circles + Quiet Target Metric */
+  .zen-horizon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0 12px;
+  }
+  .enso-trio {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .enso-item {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .enso-svg {
+    width: 26px;
+    height: 26px;
+    display: block;
+    overflow: visible;
+  }
+  .enso-item.is-done .enso-svg {
+    animation: ensoSettle 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes ensoSettle {
+    0% { transform: scale(0.88); opacity: 0.7; }
+    65% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .horizon-metric {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+  .horizon-metric b {
+    color: var(--sumi);
+    font-weight: 600;
+  }
+
+  /* Main Viewport: Airy Ma spacing, pushes interactive controls into right-thumb zone on mobile */
+  .zen-stage {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .zen-stage::-webkit-scrollbar { display: none; }
+
+  .stage-spacer {
+    flex: 1 1 20px;
+    min-height: 16px;
+  }
+
+  .view-panel {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    min-height: 100%;
+  }
+  .view-panel.active {
+    display: flex;
+  }
+
+  /* Quiet Context Line */
+  .context-line {
+    font-size: 13px;
+    color: var(--ink-3);
+    letter-spacing: 0.03em;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .tier-tag {
+    font-weight: 500;
+  }
+  .tier-tag.green { color: var(--moss); }
+  .tier-tag.yellow { color: var(--ochre); }
+  .tier-tag.red { color: var(--bengara); }
+  .tier-tag.cap { color: var(--ink-2); }
+
+  /* Single Framed Focal Object per Screen */
+  .focal-sheet {
+    background: var(--sheet);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 26px 24px 22px;
+    transition: border-color 0.25s ease;
+  }
+  .focal-sheet.done {
+    border-color: rgba(43, 95, 73, 0.28);
+  }
+
+  .focal-eyebrow {
+    font-size: 12.5px;
+    color: var(--ink-3);
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+  .focal-title {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.42;
+    color: var(--sumi);
+    margin: 0 0 12px;
+    letter-spacing: 0.01em;
+  }
+  .focal-sub {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink-2);
+    margin: 0;
+  }
+
+  .focal-actions {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 18px;
+  }
+
+  /* Primary Solid Ink / Moss Button */
+  .btn-primary {
+    height: 44px;
+    padding: 0 22px;
+    border-radius: 999px;
+    background: var(--sumi);
+    color: var(--sheet);
+    font-size: 14.5px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.16s ease, background 0.22s ease, opacity 0.2s ease;
+  }
+  .btn-primary:active { transform: scale(0.96); }
+  .btn-primary.is-done {
+    background: var(--moss);
+  }
+
+  /* Frameless Muted Ink Secondary Action */
+  .btn-quiet {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--ink-3);
+    padding: 10px 4px;
+    letter-spacing: 0.02em;
+    transition: color 0.18s ease;
+  }
+  .btn-quiet:active { color: var(--sumi); }
+  .btn-quiet.is-active {
+    color: var(--bengara);
+    font-weight: 600;
+  }
+  .btn-quiet.is-active-moss {
+    color: var(--moss);
+    font-weight: 600;
+  }
+
+  /* Right-aligned Quick Override Strip below card */
+  .quick-overrides {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 18px;
+    margin-top: 12px;
+    padding: 0 2px;
+  }
+
+  /* Frameless Hairline Ritual Rows (Today pull-up + diet) */
+  .ritual-list {
+    margin-top: 22px;
+    border-top: 1px solid var(--hairline);
+  }
+  .ritual-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 2px;
+    border-bottom: 1px solid var(--hairline);
+    gap: 12px;
+  }
+  .ritual-left {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+  .ritual-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--sumi);
+  }
+  .ritual-hint {
+    font-size: 12.5px;
+    color: var(--ink-3);
+  }
+  .ritual-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+  .tap-check {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink-2);
+    padding: 8px 2px;
+    transition: color 0.18s ease;
+  }
+  .tap-check.done {
+    color: var(--moss);
+    font-weight: 600;
+  }
+
+  /* Pull-up View Controls */
+  .rep-row {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--hairline);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .stepper {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .step-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--hairline-strong);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--sumi);
+  }
+  .step-btn:active { background: rgba(28, 27, 24, 0.05); }
+  .step-val {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 600;
+    min-width: 24px;
+    text-align: center;
+  }
+
+  .stage-ladder {
+    margin-top: 22px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--hairline);
+  }
+  .ladder-step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .ladder-bar {
+    height: 2px;
+    background: var(--track);
+    border-radius: 2px;
+  }
+  .ladder-step.past .ladder-bar,
+  .ladder-step.now .ladder-bar {
+    background: var(--moss);
+  }
+  .ladder-lbl {
+    font-size: 11.5px;
+    color: var(--ink-3);
+  }
+  .ladder-step.now .ladder-lbl {
+    color: var(--sumi);
+    font-weight: 600;
+  }
+
+  /* Body Fat & Weight Chart View */
+  .stat-pair {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+  .stat-big {
+    font-family: var(--serif);
+    font-size: 34px;
+    font-weight: 600;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    color: var(--sumi);
+  }
+  .stat-unit {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--ink-3);
+    margin-left: 3px;
+  }
+  .stat-sub {
+    font-size: 12.5px;
+    color: var(--ink-3);
+    margin-top: 5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .chart-wrap {
+    width: 100%;
+    margin: 6px 0 4px;
+  }
+  .chart-svg {
+    width: 100%;
+    height: 158px;
+    display: block;
+    overflow: visible;
+  }
+  .chart-switches {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--hairline);
+  }
+  .switch-group {
+    display: flex;
+    gap: 14px;
+  }
+
+  /* Inline Minimal Weigh-in Drawer (no heavy modal) */
+  .weigh-form {
+    display: none;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--hairline);
+    gap: 12px;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .weigh-form.open { display: flex; }
+  .field-mini {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+  .field-mini label {
+    font-size: 11.5px;
+    color: var(--ink-3);
+  }
+  .field-mini input {
+    width: 100%;
+    height: 38px;
+    border: none;
+    border-bottom: 1px solid var(--hairline-strong);
+    background: transparent;
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+    color: var(--sumi);
+    outline: none;
+    padding: 0 2px;
+  }
+  .field-mini input:focus { border-bottom-color: var(--sumi); }
+
+  /* Ledger View (总账) */
+  .ledger-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .kpi-val {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--sumi);
+  }
+  .kpi-lbl {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-top: 3px;
+  }
+  .day-ledger {
+    margin-top: 8px;
+  }
+  .day-row {
+    display: grid;
+    grid-template-columns: 62px 1fr 56px 46px;
+    align-items: center;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--hairline);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+  .day-dt { color: var(--ink-3); }
+  .day-act { color: var(--sumi); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .day-pu { color: var(--ink-2); text-align: right; }
+  .day-dot { text-align: right; color: var(--moss); font-weight: 600; }
+  .day-dot.muted { color: var(--track); font-weight: 400; }
+
+  .sync-footer {
+    margin-top: 18px;
+    padding-top: 12px;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--ink-3);
+  }
+  .sync-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+  }
+
+  /* Bottom-Right Thumb Navigation (Mobile 上看下点) */
+  .thumb-nav {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    border-top: 1px solid var(--hairline);
+    margin-top: 10px;
+  }
+  .thumb-tabs {
+    display: flex;
+    align-items: stretch;
+    margin-right: -10px;
+  }
+  .thumb-link {
+    position: relative;
+    height: 52px;
+    min-width: 58px;
+    padding: 0 12px;
+    font-size: 15.5px;
+    font-weight: 500;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    transition: color 0.18s ease;
+  }
+  .thumb-link.active {
+    color: var(--sumi);
+    font-weight: 600;
+  }
+  .thumb-link.active::after {
+    content: "";
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    top: 0;
+    height: 1.5px;
+    background: var(--sumi);
+  }
+
+  /* Quiet Toast */
+  .zen-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 80px;
+    transform: translateX(-50%) translateY(8px);
+    background: var(--sumi);
+    color: var(--sheet);
+    font-size: 13px;
+    padding: 9px 18px;
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    z-index: 40;
+  }
+  .zen-toast.show {
+    opacity: 0.94;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Unpaired Locked Shell (zero data exposed) */
+  .locked-shell {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px 4px;
+  }
+  .locked-title {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 600;
+    margin: 18px 0 10px;
+  }
+  .locked-sub {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--ink-3);
+    margin: 0;
+  }
+
+  /* Desktop Responsive Refinement */
+  @media (min-width: 860px) and (min-height: 521px) {
+    body { padding: 34px 48px 34px; }
+    .zen-shell { max-width: 580px; }
+    .zen-header { display: flex; }
+    .thumb-nav { display: none; }
+    .stage-spacer { flex: 0 0 24px; min-height: 16px; }
+    .focal-sheet { padding: 30px 28px 26px; }
+  }
+</style>
+</head>
+<body>
+<div class="zen-shell" id="app-shell">
+  <!-- Desktop Header -->
+  <header class="zen-header">
+    <div class="zen-brand">体律<span id="desk-date"></span></div>
+    <nav class="zen-nav">
+      <button class="nav-link active" data-tab="today" onclick="switchTab('today')">今日</button>
+      <button class="nav-link" data-tab="pullup" onclick="switchTab('pullup')">引体</button>
+      <button class="nav-link" data-tab="body" onclick="switchTab('body')">体脂</button>
+      <button class="nav-link" data-tab="ledger" onclick="switchTab('ledger')">总账</button>
+    </nav>
+  </header>
+
+  <!-- Locked View (shown only when opened without personal encrypted bookmark) -->
+  <div class="locked-shell" id="locked-view" style="display:none;">
+    <svg width="42" height="42" viewBox="0 0 28 28" aria-hidden="true">
+      <circle cx="14" cy="14" r="10.2" fill="none" stroke="#2B5F49" stroke-width="2.1" stroke-dasharray="55 10" stroke-linecap="round"/>
+    </svg>
+    <div class="locked-title">体律</div>
+    <p class="locked-sub">此页面不含任何公开个人数据。<br />请通过你的专属私密链接打开，打开一次后本设备会自动记住。</p>
+  </div>
+
+  <!-- Main Authenticated App -->
+  <div id="main-app" style="display:none; flex:1; min-height:0; flex-direction:column;">
+    <!-- Top Zen Enso Trio (read-only horizon) -->
+    <div class="zen-horizon">
+      <div class="enso-trio" id="enso-trio"></div>
+      <div class="horizon-metric" id="horizon-metric"></div>
+    </div>
+
+    <!-- Scrollable Focal Stage -->
+    <main class="zen-stage">
+      <!-- TAB 1: 今日 -->
+      <section class="view-panel active" id="view-today">
+        <div class="stage-spacer"></div>
+        <div class="context-line">
+          <span id="today-date-label"></span>
+          <span class="tier-tag" id="today-tier-label"></span>
+        </div>
+
+        <div class="focal-sheet" id="today-card">
+          <div class="focal-eyebrow" id="today-eyebrow"></div>
+          <h1 class="focal-title" id="today-title"></h1>
+          <p class="focal-sub" id="today-sub"></p>
+          <div class="focal-actions" id="today-actions"></div>
+        </div>
+
+        <div class="quick-overrides" id="today-overrides"></div>
+
+        <div class="ritual-list">
+          <div class="ritual-row">
+            <div class="ritual-left">
+              <span class="ritual-name" id="today-pu-name">家里引体向上</span>
+              <span class="ritual-hint" id="today-pu-hint"></span>
+            </div>
+            <div class="ritual-right" id="today-pu-btns"></div>
+          </div>
+          <div class="ritual-row">
+            <div class="ritual-left">
+              <span class="ritual-name">蛋白够 · 晚餐未爆碳</span>
+              <span class="ritual-hint" id="today-diet-hint"></span>
+            </div>
+            <div class="ritual-right">
+              <button class="tap-check" id="today-diet-btn" onclick="toggleDiet()"></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: 引体 -->
+      <section class="view-panel" id="view-pullup">
+        <div class="stage-spacer"></div>
+        <div class="context-line">
+          <span>家里单杠 · 严格不甩腿</span>
+          <span id="pu-pr-label"></span>
+        </div>
+
+        <div class="focal-sheet" id="pu-card">
+          <div class="focal-eyebrow" id="pu-stage-eyebrow"></div>
+          <h1 class="focal-title" id="pu-stage-title"></h1>
+          <p class="focal-sub" id="pu-stage-sub"></p>
+
+          <div class="rep-row">
+            <div>
+              <div style="font-size:13.5px; color:var(--sumi); font-weight:500;">本轮标准引体</div>
+              <div style="font-size:12px; color:var(--ink-3); margin-top:2px;" id="pu-neg-hint"></div>
+            </div>
+            <div class="stepper">
+              <button class="step-btn" onclick="adjStrict(-1)" aria-label="减少">−</button>
+              <span class="step-val" id="pu-strict-val">1</span>
+              <button class="step-btn" onclick="adjStrict(1)" aria-label="增加">+</button>
+            </div>
+          </div>
+
+          <div class="focal-actions">
+            <button class="btn-quiet" id="pu-undo-btn" onclick="undoPullupRound()" style="display:none;">撤销上轮</button>
+            <button class="btn-primary" id="pu-log-btn" onclick="logPullupRound()"></button>
+          </div>
+        </div>
+
+        <div class="stage-ladder" id="pu-ladder"></div>
+      </section>
+
+      <!-- TAB 3: 体脂 -->
+      <section class="view-panel" id="view-body">
+        <div class="stage-spacer"></div>
+        <div class="context-line">
+          <span>GE 智能秤趋势</span>
+          <span id="body-pace-label"></span>
+        </div>
+
+        <div class="focal-sheet">
+          <div class="stat-pair">
+            <div>
+              <div class="stat-big" id="body-bf-big">--<span class="stat-unit">%</span></div>
+              <div class="stat-sub" id="body-bf-sub"></div>
+            </div>
+            <div style="text-align:right;">
+              <div class="stat-big" style="font-size:24px; color:var(--ink-2);" id="body-wt-big">--<span class="stat-unit">kg</span></div>
+              <div class="stat-sub" id="body-wt-sub"></div>
+            </div>
+          </div>
+
+          <div class="chart-wrap" id="body-chart-wrap"></div>
+
+          <div class="chart-switches">
+            <div class="switch-group">
+              <button class="btn-quiet" id="btn-metric-bf" onclick="setChartMetric('bf')">GE 体脂</button>
+              <button class="btn-quiet" id="btn-metric-wt" onclick="setChartMetric('wt')">体重</button>
+            </div>
+            <div class="switch-group">
+              <button class="btn-quiet" id="btn-range-90" onclick="setChartRange('90')">近 90 天</button>
+              <button class="btn-quiet" id="btn-range-all" onclick="setChartRange('all')">两年全程</button>
+            </div>
+          </div>
+
+          <div class="weigh-form" id="weigh-form">
+            <div class="field-mini">
+              <label for="in-wt">体重 (kg)</label>
+              <input id="in-wt" type="number" step="0.05" inputmode="decimal" placeholder="81.5" />
+            </div>
+            <div class="field-mini">
+              <label for="in-bf">GE 体脂 (%)</label>
+              <input id="in-bf" type="number" step="0.1" inputmode="decimal" placeholder="17.8" />
+            </div>
+            <button class="btn-primary" style="height:38px; padding:0 16px; font-size:13.5px;" onclick="saveManualWeigh()">记下</button>
+          </div>
+        </div>
+
+        <div class="quick-overrides">
+          <span style="font-size:12.5px; color:var(--ink-3); margin-right:auto;" id="body-reminder"></span>
+          <button class="btn-quiet" id="toggle-weigh-btn" onclick="toggleWeighForm()">记一次 GE 秤</button>
+        </div>
+      </section>
+
+      <!-- TAB 4: 总账 -->
+      <section class="view-panel" id="view-ledger">
+        <div class="stage-spacer" style="flex:0 0 10px; min-height:8px;"></div>
+        <div class="ledger-kpis" id="ledger-kpis"></div>
+        <div class="day-ledger" id="ledger-rows"></div>
+        <div class="sync-footer">
+          <div id="sync-gaps"></div>
+          <div class="sync-row">
+            <span id="sync-status-txt">云端加密同步中</span>
+            <button class="btn-quiet" onclick="forcePullCloud()">立即同步</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Mobile Bottom-Right Thumb Nav -->
+    <nav class="thumb-nav">
+      <div class="thumb-tabs">
+        <button class="thumb-link active" data-tab="today" onclick="switchTab('today')">今日</button>
+        <button class="thumb-link" data-tab="pullup" onclick="switchTab('pullup')">引体</button>
+        <button class="thumb-link" data-tab="body" onclick="switchTab('body')">体脂</button>
+        <button class="thumb-link" data-tab="ledger" onclick="switchTab('ledger')">总账</button>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<div class="zen-toast" id="zen-toast"></div>
+
+<script>
+"use strict";
+
+/* ===================== 1. STRICT PORTRAIT GUARD (Mobile) ===================== */
+let FP_ANGLE = 0;
+function tryLockPortrait() {
+  try {
+    if (screen && screen.orientation && typeof screen.orientation.lock === "function") {
+      screen.orientation.lock("portrait").catch(() => {});
+    }
+  } catch (e) {}
+}
+function applyPortraitGuard() {
+  const root = document.documentElement;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const isPhoneTouch = (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) && Math.min(w, h) <= 520;
+  let a = 0;
+  if (isPhoneTouch && w > h) {
+    const ang = (screen && screen.orientation && typeof screen.orientation.angle === "number")
+      ? screen.orientation.angle
+      : (typeof window.orientation === "number" ? window.orientation : 90);
+    a = (ang === 270 || ang === -90) ? 270 : 90;
+  }
+  FP_ANGLE = a;
+  root.classList.toggle("fp", a !== 0);
+  root.classList.toggle("fp-90", a === 90);
+  root.classList.toggle("fp-270", a === 270);
+  if (a) {
+    root.style.setProperty("--fp-w", w + "px");
+    root.style.setProperty("--fp-h", h + "px");
+  }
+}
+applyPortraitGuard();
+tryLockPortrait();
+window.addEventListener("resize", applyPortraitGuard);
+window.addEventListener("orientationchange", () => { tryLockPortrait(); setTimeout(applyPortraitGuard, 60); });
+
+/* ===================== 2. DATE & TIMEZONE (PT, 04:00 AM ROLLOVER) ===================== */
+function getPTNow(offsetHours = 0) {
+  const now = new Date(Date.now() + offsetHours * 3600 * 1000);
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Los_Angeles",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", weekday: "short", hour12: false
+  }).formatToParts(now);
+  const map = {};
+  for (const p of parts) map[p.type] = p.value;
+  return {
+    ymd: `${map.year}-${map.month}-${map.day}`,
+    year: Number(map.year),
+    month: Number(map.month),
+    day: Number(map.day),
+    hour: Number(map.hour),
+    minute: Number(map.minute),
+    weekday: map.weekday
+  };
+}
+function getFitnessDate() {
+  // Rolls over at 04:00 AM PT so midnight finishers stay on today
+  return getPTNow(-4).ymd;
+}
+function shiftDate(ymd, deltaDays) {
+  const [y, m, d] = ymd.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d + deltaDays));
+  return dt.toISOString().slice(0, 10);
+}
+function formatCnDate(ymd) {
+  const [y, m, d] = ymd.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d, 12));
+  const wds = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+  return `${m}月${d}日 ${wds[dt.getUTCDay()]}`;
+}
+function getMondayOfWeek(ymd) {
+  const [y, m, d] = ymd.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d, 12));
+  const dow = dt.getUTCDay(); // 0=Sun..6=Sat
+  const diff = dow === 0 ? -6 : 1 - dow;
+  return shiftDate(ymd, diff);
+}
+
+/* ===================== 3. AES-256-GCM ENCRYPTED CLOUD VAULT ===================== */
+const VAULT_STORAGE_KEY = "zenbody_vault_v1";
+const STATE_STORAGE_KEY = "zenbody_state_v1";
+const PENDING_PUSH_KEY = "zenbody_pending_push_v1";
+
+function b64uToBytes(s) {
+  const pad = "=".repeat((4 - (s.length % 4)) % 4);
+  const b64 = (s + pad).replace(/-/g, "+").replace(/_/g, "/");
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+function bytesToB64u(bytes) {
+  let bin = "";
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+let VAULT = null;
+let CRYPTO_KEY = null;
+
+async function initVault() {
+  // Check URL hash first: #t=<topic>&k=<key>
+  const hash = (window.location.hash || "").replace(/^#/, "");
+  if (hash) {
+    const params = new URLSearchParams(hash);
+    const t = params.get("t");
+    const k = params.get("k");
+    if (t && k && t.length >= 16 && k.length >= 40) {
+      VAULT = { t, k };
+      try { localStorage.setItem(VAULT_STORAGE_KEY, JSON.stringify(VAULT)); } catch (e) {}
+      try { history.replaceState(null, "", window.location.pathname + window.location.search); } catch (e) {}
+    }
+  }
+  if (!VAULT) {
+    try {
+      const saved = localStorage.getItem(VAULT_STORAGE_KEY);
+      if (saved) VAULT = JSON.parse(saved);
+    } catch (e) {}
+  }
+  if (!VAULT || !VAULT.t || !VAULT.k) return false;
+  try {
+    const rawKey = b64uToBytes(VAULT.k);
+    CRYPTO_KEY = await crypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+async function encryptPayload(obj) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const plain = new TextEncoder().encode(JSON.stringify(obj));
+  const ctBuf = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, CRYPTO_KEY, plain);
+  const ct = new Uint8Array(ctBuf);
+  const combined = new Uint8Array(iv.length + ct.length);
+  combined.set(iv, 0);
+  combined.set(ct, iv.length);
+  return "z1." + bytesToB64u(combined);
+}
+
+async function decryptPayload(str) {
+  if (!str || !str.startsWith("z1.")) return null;
+  try {
+    const raw = b64uToBytes(str.slice(3));
+    if (raw.length < 29) return null;
+    const iv = raw.slice(0, 12);
+    const ct = raw.slice(12);
+    const plainBuf = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, CRYPTO_KEY, ct);
+    return JSON.parse(new TextDecoder().decode(plainBuf));
+  } catch (e) {
+    return null;
+  }
+}
+
+/* ===================== 4. STATE MODEL & LOSSLESS CRDT MERGE ===================== */
+function defaultState() {
+  return {
+    v: 1,
+    ts: 0,
+    targets: { bf_ge: 14.0, pullups: 5, deadline: "2027-12-31", pu_max_reps: 3, pu_max_rounds: 2 },
+    pu_best: 1,
+    vitals: { vo2: null, rhr: null, last_drive_sync: "", gaps: [] },
+    trips: [],
+    wb: [],   // [dateStr, kg, bfOrNull, src]
+    acts: [], // [dateStr, type('bb'|'pelo'|'cyc'), durMin, kcal, avgHr, maxHr, src]
+    days: {}  // ymd -> { ts, bb, pelo, pelo_min, pu: [[strict,neg],...], diet: 0|1, wt, bf }
+  };
+}
+
+let STATE = defaultState();
+let CURRENT_TAB = "today";
+let CHART_METRIC = "bf";
+let CHART_RANGE = "90";
+let SELECTED_PELO_MIN = 40;
+let PU_STRICT_INPUT = 1;
+let LAST_SYNC_NOTE = "";
+let PUSH_TIMER = null;
+
+function loadLocalState() {
+  try {
+    const raw = localStorage.getItem(STATE_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.v === 1) STATE = mergeStates(defaultState(), parsed);
+    }
+  } catch (e) {}
+}
+
+function saveLocalState() {
+  try { localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(STATE)); } catch (e) {}
+}
+
+function mergeStates(a, b) {
+  if (!b || typeof b !== "object") return a;
+  const newer = (b.ts || 0) >= (a.ts || 0) ? b : a;
+  const older = newer === b ? a : b;
+  const out = {
+    v: 1,
+    ts: Math.max(a.ts || 0, b.ts || 0),
+    targets: Object.assign({}, older.targets || {}, newer.targets || {}),
+    pu_best: Math.max(a.pu_best || 1, b.pu_best || 1),
+    vitals: Object.assign({}, older.vitals || {}, newer.vitals || {}),
+    trips: (newer.trips && newer.trips.length) ? newer.trips : (older.trips || []),
+    wb: [],
+    acts: [],
+    days: {}
+  };
+  if ((a.vitals && a.vitals.last_drive_sync || "") > (out.vitals.last_drive_sync || "")) {
+    out.vitals = Object.assign({}, out.vitals, a.vitals);
+  }
+  if ((b.vitals && b.vitals.last_drive_sync || "") > (out.vitals.last_drive_sync || "")) {
+    out.vitals = Object.assign({}, out.vitals, b.vitals);
+  }
+
+  const wbMap = new Map();
+  for (const list of [older.wb || [], newer.wb || []]) {
+    for (const row of list) {
+      if (!row || !row[0]) continue;
+      const prev = wbMap.get(row[0]);
+      if (!prev) {
+        wbMap.set(row[0], row.slice());
+      } else {
+        const kg = row[1] || prev[1];
+        const bf = (row[2] && row[2] > 5) ? row[2] : prev[2];
+        const src = (row[2] && row[2] > 5) ? (row[3] || prev[3]) : (prev[3] || row[3]);
+        wbMap.set(row[0], [row[0], kg, bf, src]);
+      }
+    }
+  }
+  out.wb = Array.from(wbMap.values()).sort((x, y) => x[0].localeCompare(y[0]));
+
+  const actMap = new Map();
+  for (const list of [older.acts || [], newer.acts || []]) {
+    for (const r of list) {
+      if (!r || !r[0]) continue;
+      const key = `${r[0]}|${r[1]}|${Math.round((r[2] || 0) / 5)}`;
+      actMap.set(key, r.slice());
+    }
+  }
+  out.acts = Array.from(actMap.values()).sort((x, y) => x[0].localeCompare(y[0]));
+
+  const allDayKeys = new Set([...Object.keys(a.days || {}), ...Object.keys(b.days || {})]);
+  for (const k of allDayKeys) {
+    const da = (a.days && a.days[k]) || null;
+    const db = (b.days && b.days[k]) || null;
+    if (!da) { out.days[k] = Object.assign({}, db); continue; }
+    if (!db) { out.days[k] = Object.assign({}, da); continue; }
+    const dn = (db.ts || 0) >= (da.ts || 0) ? db : da;
+    const do_ = dn === db ? da : db;
+    out.days[k] = Object.assign({}, do_, dn);
+  }
+  return out;
+}
+
+function compactStateForTransport(st) {
+  const today = getFitnessDate();
+  const cutoff21 = shiftDate(today, -21);
+  const compactDays = {};
+  for (const [k, v] of Object.entries(st.days || {})) {
+    if (k >= cutoff21) compactDays[k] = v;
+  }
+  const wbAll = st.wb || [];
+  let wbCompact = wbAll;
+  if (wbAll.length > 36) {
+    const recent = wbAll.slice(-20);
+    const recentSet = new Set(recent.map(r => r[0]));
+    const earlier = wbAll.filter(r => !recentSet.has(r[0]));
+    const byMonth = new Map();
+    for (const r of earlier) byMonth.set(r[0].slice(0, 7), r);
+    wbCompact = [...Array.from(byMonth.values()).slice(-16), ...recent];
+  }
+  return {
+    v: 1,
+    ts: st.ts || Math.floor(Date.now() / 1000),
+    targets: st.targets,
+    pu_best: st.pu_best,
+    vitals: st.vitals,
+    trips: st.trips || [],
+    wb: wbCompact,
+    acts: (st.acts || []).slice(-18),
+    days: compactDays
+  };
+}
+
+async function pullFromCloud(silent = true) {
+  if (!VAULT || !CRYPTO_KEY) return false;
+  let mergedCount = 0;
+  // 1. Always merge permanent encrypted vault snapshot (immune to 12h relay TTL on new devices)
+  try {
+    const vRes = await fetch(`./vault.enc?t=${Date.now()}`, { cache: "no-store" });
+    if (vRes.ok) {
+      const cipher = (await vRes.text()).trim();
+      const dec = await decryptPayload(cipher);
+      if (dec && dec.v === 1) {
+        STATE = mergeStates(STATE, dec);
+        mergedCount++;
+      }
+    }
+  } catch (e) {}
+
+  // 2. Pull live encrypted relay updates (phone <-> desktop <-> cloud)
+  try {
+    const url = `https://ntfy.sh/${encodeURIComponent(VAULT.t)}/json?poll=1&since=all`;
+    const res = await fetch(url, { cache: "no-store" });
+    if (res.ok) {
+      const text = await res.text();
+      const lines = text.trim().split("\n").filter(Boolean);
+      for (const line of lines) {
+        try {
+          const ev = JSON.parse(line);
+          if (ev.event !== "message" || !ev.message) continue;
+          const dec = await decryptPayload(ev.message.trim());
+          if (dec && dec.v === 1) {
+            STATE = mergeStates(STATE, dec);
+            mergedCount++;
+          }
+        } catch (e) {}
+      }
+    }
+    if (mergedCount > 0) {
+      saveLocalState();
+      syncPullupInputDefault();
+    }
+    const pt = getPTNow();
+    LAST_SYNC_NOTE = `云端已同步 · ${String(pt.hour).padStart(2, "0")}:${String(pt.minute).padStart(2, "0")}`;
+    renderAll();
+    if (!silent) showToast("已同步最新数据");
+    return true;
+  } catch (e) {
+    if (mergedCount > 0) saveLocalState();
+    LAST_SYNC_NOTE = "离线模式 · 联网后自动同步";
+    renderAll();
+    return false;
+  }
+}
+
+async function pushToCloudNow() {
+  if (!VAULT || !CRYPTO_KEY) return;
+  try {
+    const payload = compactStateForTransport(STATE);
+    const enc = await encryptPayload(payload);
+    if (enc.length > 3850) {
+      // Trim older days slightly if ever near ntfy limit
+      payload.wb = payload.wb.slice(-24);
+      payload.acts = payload.acts.slice(-12);
+    }
+    const finalEnc = await encryptPayload(payload);
+    const res = await fetch(`https://ntfy.sh/${encodeURIComponent(VAULT.t)}`, {
+      method: "POST",
+      body: finalEnc
+    });
+    if (res.ok) {
+      try { localStorage.removeItem(PENDING_PUSH_KEY); } catch (e) {}
+      const pt = getPTNow();
+      LAST_SYNC_NOTE = `已加密同步 · ${String(pt.hour).padStart(2, "0")}:${String(pt.minute).padStart(2, "0")}`;
+      const el = document.getElementById("sync-status-txt");
+      if (el) el.textContent = LAST_SYNC_NOTE;
+    } else {
+      try { localStorage.setItem(PENDING_PUSH_KEY, "1"); } catch (e) {}
+    }
+  } catch (e) {
+    try { localStorage.setItem(PENDING_PUSH_KEY, "1"); } catch (err) {}
+  }
+}
+
+function schedulePush() {
+  STATE.ts = Math.floor(Date.now() / 1000);
+  saveLocalState();
+  try { localStorage.setItem(PENDING_PUSH_KEY, "1"); } catch (e) {}
+  clearTimeout(PUSH_TIMER);
+  PUSH_TIMER = setTimeout(pushToCloudNow, 320);
+}
+
+/* ===================== 5. DYNAMIC FITNESS BRAIN ENGINE ===================== */
+function getDayEntry(ymd) {
+  return (STATE.days && STATE.days[ymd]) || {};
+}
+
+function getDriveActsForDate(ymd) {
+  return (STATE.acts || []).filter(a => a[0] === ymd);
+}
+
+function getBasketballForDate(ymd) {
+  const day = getDayEntry(ymd);
+  const driveBB = getDriveActsForDate(ymd).filter(a => a[1] === "bb");
+  if (driveBB.length > 0) {
+    // Combine if multiple sessions same day
+    const dur = driveBB.reduce((s, r) => s + (r[2] || 0), 0);
+    const kcal = driveBB.reduce((s, r) => s + (r[3] || 0), 0);
+    const avgHr = Math.max(...driveBB.map(r => r[4] || 0));
+    const maxHr = Math.max(...driveBB.map(r => r[5] || 0));
+    const level = (dur >= 40 || kcal >= 700 || avgHr >= 125) ? "high" : "light";
+    return { level, dur: Math.round(dur), kcal: Math.round(kcal), avgHr, maxHr, src: "drive" };
+  }
+  if (day.bb === "high" || day.bb === "light") {
+    return { level: day.bb, dur: 0, kcal: 0, avgHr: 0, maxHr: 0, src: "tap" };
+  }
+  return null;
+}
+
+function getPelotonForDate(ymd) {
+  const day = getDayEntry(ymd);
+  const drivePelo = getDriveActsForDate(ymd).filter(a => a[1] === "pelo");
+  if (drivePelo.length > 0) {
+    const dur = Math.round(drivePelo.reduce((s, r) => s + (r[2] || 0), 0));
+    return { status: "done", min: dur, src: "drive" };
+  }
+  if (day.pelo) return { status: day.pelo, min: day.pelo_min || 0, src: "tap" };
+  return null;
+}
+
+function getActiveTrip(ymd) {
+  for (const tr of (STATE.trips || [])) {
+    if (ymd >= tr.start && ymd <= tr.end) return tr;
+  }
+  return null;
+}
+
+function getWeeklyStats(todayYmd) {
+  const mon = getMondayOfWeek(todayYmd);
+  let bbHigh = 0, bbLight = 0, peloMain = 0, peloRec = 0, puRounds = 0, dietDays = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = shiftDate(mon, i);
+    if (d > todayYmd) break;
+    const bb = getBasketballForDate(d);
+    if (bb) {
+      if (bb.level === "high") bbHigh++;
+      else bbLight++;
+    }
+    const pelo = getPelotonForDate(d);
+    if (pelo) {
+      if (pelo.status === "done") peloMain++;
+      else if (pelo.status === "recovery") peloRec++;
+    }
+    const de = getDayEntry(d);
+    puRounds += (de.pu || []).length;
+    if (de.diet) dietDays++;
+  }
+  return { mon, bbHigh, bbLight, peloMain, peloRec, totalHardCardio: bbHigh + peloMain, puRounds, dietDays };
+}
+
+function computeDynamicPlan(todayYmd) {
+  const trip = getActiveTrip(todayYmd);
+  const bbToday = getBasketballForDate(todayYmd);
+  const bbYest = getBasketballForDate(shiftDate(todayYmd, -1));
+  const bbTwoDays = getBasketballForDate(shiftDate(todayYmd, -2));
+  const peloToday = getPelotonForDate(todayYmd);
+  const week = getWeeklyStats(todayYmd);
+  const rhr = (STATE.vitals && STATE.vitals.rhr) || 40;
+  const rhrHigh = rhr >= 46;
+
+  // 1. Travel Mode (e.g. Europe trip)
+  if (trip) {
+    return {
+      tier: "cap",
+      tierText: `旅途中 · ${trip.name}`,
+      eyebrow: "旅途维持模式",
+      title: "轻松步行观光，回来再接力",
+      sub: "旅途每天自然暴走就是最好的有氧，无需强求器械与骑车。",
+      cardioDone: !!(peloToday || bbToday),
+      puTargetRounds: 0,
+      defaultPeloMin: 0,
+      bbToday, peloToday, week, isTravel: true
+    };
+  }
+
+  // 2. RED: High-Intensity Basketball Today -> Cancel Hard Peloton!
+  if (bbToday && bbToday.level === "high") {
+    const statBits = [];
+    if (bbToday.dur) statBits.push(`${bbToday.dur} 分钟`);
+    if (bbToday.kcal) statBits.push(`消耗 ${bbToday.kcal} 大卡`);
+    if (bbToday.maxHr) statBits.push(`最高心率 ${bbToday.maxHr}`);
+    const detail = statBits.length
+      ? `已同步今日篮球（${statBits.join(" · ")}）。腿部与心肺强度已经拉满，今晚绝不再加高强度骑行，可极低阻力轻踩排酸顺便听《锵锵三人行》。`
+      : "今天已经历高强度篮球对抗，腿部负荷已满，今晚取消 Peloton 强度课，彻底休息或低阻力轻松排酸即可。";
+    return {
+      tier: "red",
+      tierText: "红档 · 今日高强度篮球",
+      eyebrow: "今日心肺已达标",
+      title: "今晚休息，或 15 分钟极轻排酸骑",
+      sub: detail,
+      cardioDone: true, // Basketball already satisfies Circle 1!
+      puTargetRounds: 1, // Softened to 1 round if forearms tired
+      defaultPeloMin: 15,
+      bbToday, peloToday, week, isTravel: false
+    };
+  }
+
+  // 3. CAP: Weekly Hard Cardio >= 5 sessions
+  const hardExcludingToday = week.totalHardCardio - (peloToday && peloToday.status === "done" ? 1 : 0);
+  if (hardExcludingToday >= 5) {
+    return {
+      tier: "cap",
+      tierText: "满额 · 本周心肺已足",
+      eyebrow: "周总量保护",
+      title: "今晚彻底休整，状态留给下周",
+      sub: `本周已完成 ${week.bbHigh} 场高强度篮球与 ${week.peloMain} 次 Peloton，总量已经达标，好好睡一觉比硬撑更掉体脂。`,
+      cardioDone: !!(peloToday && (peloToday.status === "rest" || peloToday.status === "recovery" || peloToday.status === "done")),
+      puTargetRounds: 2,
+      defaultPeloMin: 15,
+      bbToday, peloToday, week, isTravel: false
+    };
+  }
+
+  // 4. YELLOW: Light Basketball Today, OR Back-to-Back Hard Basketball Days, OR Yesterday Hard Basketball + High RHR
+  const backToBackHard = (bbYest && bbYest.level === "high") && (bbTwoDays && bbTwoDays.level === "high");
+  const yestHardAndTired = (bbYest && bbYest.level === "high") && rhrHigh;
+  if ((bbToday && bbToday.level === "light") || backToBackHard || yestHardAndTired) {
+    let reason = "今日已轻度活动投篮，晚上改做低阻力温和有氧，排酸不伤膝。";
+    if (backToBackHard) reason = "前两天连续打了高强度篮球，今晚降档为轻松恢复骑，让双腿回血。";
+    else if (yestHardAndTired) reason = `昨天刚打完高强度篮球且静息心率偏高（${rhr}），今晚降档轻松恢复骑。`;
+    return {
+      tier: "yellow",
+      tierText: "黄档 · 温和恢复日",
+      eyebrow: "今晚动态建议",
+      title: "Peloton 恢复骑 20 至 25 分钟",
+      sub: reason,
+      cardioDone: !!(peloToday && (peloToday.status === "recovery" || peloToday.status === "done" || peloToday.status === "rest")),
+      puTargetRounds: 2,
+      defaultPeloMin: 20,
+      bbToday, peloToday, week, isTravel: false
+    };
+  }
+
+  // 5. GREEN: Fresh Day -> Zone 2 Fat-Burn Peloton
+  const yestNote = (bbYest && bbYest.level === "high")
+    ? "昨天打完球但静息心率恢复良好，今晚稳踩低心率 Zone 2 既燃脂又促恢复。"
+    : "低心率 Zone 2 稳态有氧，最稳烧脂肪且不引发暴食，刚好配一集日剧或一期《锵锵三人行》。";
+  return {
+    tier: "green",
+    tierText: "绿档 · 黄金燃脂日",
+    eyebrow: "今晚动态建议",
+    title: `Peloton 低心率燃脂 ${SELECTED_PELO_MIN} 分钟`,
+    sub: yestNote,
+    cardioDone: !!(peloToday && (peloToday.status === "done" || peloToday.status === "recovery")),
+    puTargetRounds: 2,
+    defaultPeloMin: SELECTED_PELO_MIN,
+    bbToday, peloToday, week, isTravel: false
+  };
+}
+
+function getPullupStage() {
+  const best = STATE.pu_best || 1;
+  if (best < 2) {
+    return {
+      idx: 0,
+      code: "阶段一 · 稳固起步",
+      title: "每轮不超过 3 下 · 每天最多 2 轮",
+      sub: "1 个严格标准不甩引体 + 2 次 4 秒匀速慢放。路过单杠 1 分钟拉完，绝不拉到力竭，两轮间隔 2 小时以上。",
+      defaultStrict: 1,
+      negReps: 2,
+      maxRounds: 2
+    };
+  }
+  if (best < 3) {
+    return {
+      idx: 1,
+      code: "阶段二 · 双连巩固",
+      title: "每轮 2 个标准连拉 + 1 次慢放",
+      sub: "依然每轮不超过 3 下、每天最多 2 轮。全程直上直下不晃腿，稳固后再冲 3 连拉。",
+      defaultStrict: 2,
+      negReps: 1,
+      maxRounds: 2
+    };
+  }
+  if (best < 4) {
+    return {
+      idx: 2,
+      code: "阶段三 · 三连进阶",
+      title: "每轮 3 个标准连拉 · 每天 2 轮",
+      sub: "全程控制下放不借力；每周选精力最好的一天，第 1 轮试拉第 4 个。",
+      defaultStrict: 3,
+      negReps: 0,
+      maxRounds: 2
+    };
+  }
+  return {
+    idx: 3,
+    code: "阶段四 · 锁死五连",
+    title: "每轮 4 至 5 个轻松标准连拉",
+    sub: "稳稳把 5 个严格引体变成日常轻松动作，提前锁定 2027 年底目标。",
+    defaultStrict: Math.min(5, best),
+    negReps: 0,
+    maxRounds: 2
+  };
+}
+
+function syncPullupInputDefault() {
+  PU_STRICT_INPUT = getPullupStage().defaultStrict;
+}
+
+/* ===================== 6. RENDERING ===================== */
+function renderEnsoSVG(ratio, isDone) {
+  if (isDone) {
+    return `<svg class="enso-svg" viewBox="0 0 28 28" aria-hidden="true">
+      <circle cx="14" cy="14" r="10.2" fill="#2D7A56"/>
+      <path d="M 9.6 14.3 L 12.6 17.2 L 18.7 10.9" fill="none" stroke="#FCFBF8" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  }
+  if (ratio > 0.01) {
+    const pct = Math.max(10, Math.min(95, Math.round(ratio * 100)));
+    return `<svg class="enso-svg" viewBox="0 0 28 28" aria-hidden="true">
+      <circle cx="14" cy="14" r="9.8" fill="none" stroke="rgba(28, 27, 24, 0.13)" stroke-width="1.85"/>
+      <circle cx="14" cy="14" r="9.8" pathLength="100" fill="none" stroke="#2D7A56" stroke-width="2.3" stroke-linecap="round" stroke-dasharray="${pct} 100" transform="rotate(-90 14 14)"/>
+    </svg>`;
+  }
+  return `<svg class="enso-svg" viewBox="0 0 28 28" aria-hidden="true">
+    <circle cx="14" cy="14" r="9.8" fill="none" stroke="rgba(28, 27, 24, 0.16)" stroke-width="1.75" stroke-dasharray="54 7" stroke-linecap="round" transform="rotate(-40 14 14)"/>
+  </svg>`;
+}
+
+function getLatestBodyMetrics() {
+  const wb = STATE.wb || [];
+  let latestWt = null, latestBf = null, bestBf = null;
+  for (const r of wb) {
+    if (r[1]) latestWt = { date: r[0], val: r[1] };
+    if (r[2] && r[2] > 5) {
+      latestBf = { date: r[0], val: r[2] };
+      if (!bestBf || r[2] < bestBf.val) bestBf = { date: r[0], val: r[2], wt: r[1] };
+    }
+  }
+  // 7-day smoothed weight (last 3 weigh-ins within 14d if sparse)
+  const validWts = wb.filter(r => r[1]).slice(-5);
+  const avgWt = validWts.length ? +(validWts.reduce((s, r) => s + r[1], 0) / validWts.length).toFixed(1) : null;
+  return { latestWt, latestBf, bestBf, avgWt };
+}
+
+function renderAll() {
+  const today = getFitnessDate();
+  const plan = computeDynamicPlan(today);
+  const day = getDayEntry(today);
+  const puRounds = (day.pu || []).length;
+  const puTarget = plan.puTargetRounds;
+  const puDone = puTarget === 0 ? true : puRounds >= puTarget;
+  const puRatio = puTarget > 0 ? Math.min(1, puRounds / puTarget) : 1;
+  const dietDone = !!day.diet;
+  const body = getLatestBodyMetrics();
+
+  // Desktop date
+  document.getElementById("desk-date").textContent = formatCnDate(today);
+
+  // Top Enso Trio
+  const ensoTrio = document.getElementById("enso-trio");
+  const circles = [
+    { done: plan.cardioDone, ratio: plan.cardioDone ? 1 : 0, title: "心肺" },
+    { done: puDone, ratio: puRatio, title: "引体" },
+    { done: dietDone, ratio: dietDone ? 1 : 0, title: "节律" }
+  ];
+  ensoTrio.innerHTML = circles.map(c =>
+    `<span class="enso-item ${c.done ? "is-done" : ""}" title="${c.title}">${renderEnsoSVG(c.ratio, c.done)}</span>`
+  ).join("");
+
+  // Top Right Quiet Target Readout
+  const bfStr = body.latestBf ? `${body.latestBf.val.toFixed(1)}%` : "--%";
+  document.getElementById("horizon-metric").innerHTML = `GE <b>${bfStr}</b> → 14%`;
+
+  renderToday(today, plan, day, puRounds, puTarget, puDone, dietDone);
+  renderPullup(today, plan, day, puRounds, puTarget);
+  renderBody(today, body);
+  renderLedger(today, plan, body);
+}
+
+function renderToday(today, plan, day, puRounds, puTarget, puDone, dietDone) {
+  document.getElementById("today-date-label").textContent = formatCnDate(today);
+  const tierEl = document.getElementById("today-tier-label");
+  tierEl.textContent = plan.tierText;
+  tierEl.className = `tier-tag ${plan.tier}`;
+
+  const card = document.getElementById("today-card");
+  card.classList.toggle("done", plan.cardioDone);
+  document.getElementById("today-eyebrow").textContent = plan.eyebrow;
+  document.getElementById("today-title").textContent = plan.title;
+  document.getElementById("today-sub").textContent = plan.sub;
+
+  // Primary Actions inside focal card
+  const actBox = document.getElementById("today-actions");
+  if (plan.isTravel) {
+    actBox.innerHTML = `<button class="btn-primary ${plan.cardioDone ? "is-done" : ""}" onclick="markPeloton('rest')">${plan.cardioDone ? "今日旅途已打卡" : "记今日步行维持"}</button>`;
+  } else if (plan.tier === "red") {
+    const recDone = plan.peloToday && plan.peloToday.status === "recovery";
+    actBox.innerHTML = `
+      <button class="btn-quiet ${recDone ? "is-active-moss" : ""}" onclick="markPeloton('recovery')">${recDone ? "已顺便排酸骑 15 分" : "补记 15 分排酸骑"}</button>
+      <button class="btn-primary is-done" onclick="showToast('今日高强度篮球已达标，好好恢复')">心肺已达标</button>
+    `;
+  } else if (plan.tier === "cap") {
+    actBox.innerHTML = `<button class="btn-primary ${plan.cardioDone ? "is-done" : ""}" onclick="markPeloton('rest')">${plan.cardioDone ? "已确认休整" : "确认今日休整"}</button>`;
+  } else if (plan.tier === "yellow") {
+    const isRec = plan.peloToday && plan.peloToday.status === "recovery";
+    const isRest = plan.peloToday && plan.peloToday.status === "rest";
+    actBox.innerHTML = `
+      <button class="btn-quiet ${isRest ? "is-active-moss" : ""}" onclick="markPeloton('rest')">${isRest ? "今日已休整" : "腿沉改休整"}</button>
+      <button class="btn-primary ${isRec ? "is-done" : ""}" onclick="markPeloton('recovery')">${isRec ? "已完成恢复骑" : "完成恢复骑"}</button>
+    `;
+  } else {
+    const isDone = plan.peloToday && plan.peloToday.status === "done";
+    const durBtns = [30, 40, 45].map(m =>
+      `<button class="btn-quiet ${SELECTED_PELO_MIN === m ? "is-active-moss" : ""}" onclick="setPeloMin(${m})">${m}分</button>`
+    ).join("");
+    actBox.innerHTML = `
+      <span style="margin-right:auto; display:flex; gap:10px;">${isDone ? "" : durBtns}</span>
+      <button class="btn-primary ${isDone ? "is-done" : ""}" onclick="markPeloton('done')">${isDone ? `已完成 ${plan.peloToday.min || SELECTED_PELO_MIN} 分钟` : "完成 Peloton"}</button>
+    `;
+  }
+
+  // Quick live basketball overrides (right-aligned frameless)
+  const bb = plan.bbToday;
+  const ovBox = document.getElementById("today-overrides");
+  if (!plan.isTravel) {
+    const fromDrive = bb && bb.src === "drive";
+    ovBox.innerHTML = fromDrive
+      ? `<span style="font-size:12.5px; color:var(--ink-3);">已从云盘自动识别今日篮球</span>`
+      : `
+        <button class="btn-quiet ${bb && bb.level === "high" ? "is-active" : ""}" onclick="toggleBasketball('high')">${bb && bb.level === "high" ? "取消高强度篮球" : "刚打完高强度篮球"}</button>
+        <button class="btn-quiet ${bb && bb.level === "light" ? "is-active-moss" : ""}" onclick="toggleBasketball('light')">${bb && bb.level === "light" ? "取消轻投篮" : "今天轻投篮"}</button>
+      `;
+  } else {
+    ovBox.innerHTML = "";
+  }
+
+  // Quick Home Pull-Up Row
+  const stg = getPullupStage();
+  document.getElementById("today-pu-name").textContent = "家里引体向上";
+  document.getElementById("today-pu-hint").textContent = plan.isTravel
+    ? "旅途中暂休，回家接着拉"
+    : (plan.tier === "red"
+        ? `打球日前臂易累 · 今天 1 轮即达标（每轮 ${stg.defaultStrict} 严格${stg.negReps ? ` + ${stg.negReps} 慢放` : ""}）`
+        : `今天 ${puTarget} 轮封顶 · 每轮 ${stg.defaultStrict} 严格${stg.negReps ? ` + ${stg.negReps} 慢放` : ""}`);
+
+  const puBtns = document.getElementById("today-pu-btns");
+  if (plan.isTravel) {
+    puBtns.innerHTML = `<span class="tap-check done">旅途免杠</span>`;
+  } else {
+    const r1 = puRounds >= 1;
+    const r2 = puRounds >= 2;
+    puBtns.innerHTML = `
+      <button class="tap-check ${r1 ? "done" : ""}" onclick="quickPullupTap(1)">${r1 ? "第 1 轮 ✓" : "第 1 轮"}</button>
+      <button class="tap-check ${r2 ? "done" : ""}" onclick="quickPullupTap(2)">${r2 ? "第 2 轮 ✓" : "第 2 轮"}</button>
+    `;
+  }
+
+  // Diet Guardrail Row
+  document.getElementById("today-diet-hint").textContent = "体脂 14% 守门 · 运动完不暴吃碳水";
+  const dBtn = document.getElementById("today-diet-btn");
+  dBtn.textContent = dietDone ? "已达标 ✓" : "记达标";
+  dBtn.className = `tap-check ${dietDone ? "done" : ""}`;
+}
+
+function renderPullup(today, plan, day, puRounds, puTarget) {
+  const stg = getPullupStage();
+  const rounds = day.pu || [];
+  document.getElementById("pu-pr-label").textContent = `当前最好 ${STATE.pu_best || 1} 个 · 目标 5 个`;
+  document.getElementById("pu-stage-eyebrow").textContent = `${stg.code} · 今日已完成 ${puRounds} / ${puTarget || 2} 轮`;
+  document.getElementById("pu-stage-title").textContent = stg.title;
+  document.getElementById("pu-stage-sub").textContent = stg.sub;
+
+  const neg = Math.max(0, 3 - PU_STRICT_INPUT);
+  document.getElementById("pu-strict-val").textContent = PU_STRICT_INPUT;
+  document.getElementById("pu-neg-hint").textContent = PU_STRICT_INPUT < 3
+    ? `可再配 ${neg} 次 4 秒匀速慢放（本轮共 3 下）`
+    : "本轮纯标准连拉，绝不甩腿借力";
+
+  const card = document.getElementById("pu-card");
+  card.classList.toggle("done", puRounds >= (puTarget || 2));
+
+  const logBtn = document.getElementById("pu-log-btn");
+  if (puRounds >= 2) {
+    logBtn.textContent = "今日 2 轮已满额";
+    logBtn.className = "btn-primary is-done";
+  } else {
+    logBtn.textContent = `记完第 ${puRounds + 1} 轮`;
+    logBtn.className = "btn-primary";
+  }
+  document.getElementById("pu-undo-btn").style.display = puRounds > 0 ? "inline-block" : "none";
+
+  // 4-Stage Ladder
+  const stages = ["1 严格+慢放", "2 连拉", "3 至 4 连", "轻松 5 连"];
+  document.getElementById("pu-ladder").innerHTML = stages.map((lbl, i) => {
+    const cls = i < stg.idx ? "past" : (i === stg.idx ? "now" : "");
+    return `<div class="ladder-step ${cls}"><div class="ladder-bar"></div><div class="ladder-lbl">${lbl}</div></div>`;
+  }).join("");
+}
+
+function renderBody(today, body) {
+  const targetBf = (STATE.targets && STATE.targets.bf_ge) || 14.0;
+  const deadline = (STATE.targets && STATE.targets.deadline) || "2027-12-31";
+  const curBf = body.latestBf ? body.latestBf.val : null;
+  const curWt = body.latestWt ? body.latestWt.val : null;
+  const estTargetWt = (curWt && curBf) ? +((curWt * (1 - curBf / 100)) / (1 - targetBf / 100)).toFixed(1) : 77.5;
+
+  document.getElementById("body-bf-big").innerHTML = `${curBf !== null ? curBf.toFixed(1) : "--"}<span class="stat-unit">%</span>`;
+  document.getElementById("body-wt-big").innerHTML = `${curWt !== null ? curWt.toFixed(1) : "--"}<span class="stat-unit">kg</span>`;
+
+  if (curBf !== null) {
+    const diff = +(curBf - targetBf).toFixed(1);
+    const monthsLeft = Math.max(1, Math.round((new Date(deadline) - new Date(today)) / (30.4 * 86400000)));
+    const perMonth = (Math.max(0, diff) / monthsLeft).toFixed(2);
+    document.getElementById("body-pace-label").textContent = diff > 0 ? `距 ${targetBf}% 剩 ${diff}% · 均月 ${perMonth}%` : `已达 ${targetBf}% 目标`;
+    document.getElementById("body-bf-sub").textContent = body.bestBf
+      ? `两年最佳 ${body.bestBf.val.toFixed(1)}% (${body.bestBf.date.slice(2, 7)})`
+      : `目标 ${targetBf}%`;
+  } else {
+    document.getElementById("body-pace-label").textContent = `目标 ${targetBf}%`;
+    document.getElementById("body-bf-sub").textContent = "等待 GE 秤体脂记录";
+  }
+
+  document.getElementById("body-wt-sub").textContent = body.avgWt
+    ? `近期均值 ${body.avgWt} kg · 估标 ~${estTargetWt} kg`
+    : "7 日平滑均值";
+
+  // Switch active states
+  document.getElementById("btn-metric-bf").className = `btn-quiet ${CHART_METRIC === "bf" ? "is-active-moss" : ""}`;
+  document.getElementById("btn-metric-wt").className = `btn-quiet ${CHART_METRIC === "wt" ? "is-active-moss" : ""}`;
+  document.getElementById("btn-range-90").className = `btn-quiet ${CHART_RANGE === "90" ? "is-active-moss" : ""}`;
+  document.getElementById("btn-range-all").className = `btn-quiet ${CHART_RANGE === "all" ? "is-active-moss" : ""}`;
+
+  // Gentle weigh-in reminder if stale > 5 days
+  const lastDate = (body.latestBf && body.latestBf.date) || (body.latestWt && body.latestWt.date) || "";
+  if (lastDate) {
+    const gapDays = Math.round((new Date(today) - new Date(lastDate)) / 86400000);
+    document.getElementById("body-reminder").textContent = gapDays >= 5
+      ? `上次 GE 体脂 ${lastDate.slice(5)} · 记得光脚开 Fit Profile 称一次`
+      : `最近称重 ${lastDate.slice(5)}`;
+  } else {
+    document.getElementById("body-reminder").textContent = "";
+  }
+
+  // Render Minimalist SVG Line Chart
+  const cutoff = CHART_RANGE === "90" ? shiftDate(today, -95) : "2020-01-01";
+  const rawPts = (STATE.wb || [])
+    .filter(r => r[0] >= cutoff)
+    .map(r => ({ d: r[0], v: CHART_METRIC === "bf" ? r[2] : r[1] }))
+    .filter(p => p.v && p.v > 5);
+
+  const wrap = document.getElementById("body-chart-wrap");
+  if (rawPts.length < 2) {
+    wrap.innerHTML = `<div style="height:140px; display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--ink-3);">再记一次称重即显示曲线</div>`;
+    return;
+  }
+
+  const W = 400, H = 148, padL = 6, padR = 36, padT = 14, padB = 22;
+  const vals = rawPts.map(p => p.v);
+  const goalVal = CHART_METRIC === "bf" ? targetBf : estTargetWt;
+  const minV = Math.min(...vals, goalVal) - (CHART_METRIC === "bf" ? 0.8 : 1.0);
+  const maxV = Math.max(...vals, goalVal) + (CHART_METRIC === "bf" ? 0.8 : 1.0);
+  const spanV = Math.max(1, maxV - minV);
+
+  const t0 = new Date(rawPts[0].d).getTime();
+  const t1 = new Date(rawPts[rawPts.length - 1].d).getTime();
+  const spanT = Math.max(86400000, t1 - t0);
+
+  const xy = rawPts.map(p => {
+    const x = padL + ((new Date(p.d).getTime() - t0) / spanT) * (W - padL - padR);
+    const y = padT + (1 - (p.v - minV) / spanV) * (H - padT - padB);
+    return { x: +x.toFixed(1), y: +y.toFixed(1), d: p.d, v: p.v };
+  });
+
+  const goalY = +(padT + (1 - (goalVal - minV) / spanV) * (H - padT - padB)).toFixed(1);
+  const pathD = xy.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+  const last = xy[xy.length - 1];
+  const first = xy[0];
+
+  wrap.innerHTML = `
+    <svg class="chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      <line x1="${padL}" y1="${goalY}" x2="${W - padR}" y2="${goalY}" stroke="#2B5F49" stroke-opacity="0.45" stroke-width="1" stroke-dasharray="3 4"/>
+      <text x="${W - padR + 5}" y="${goalY + 3.5}" fill="#2B5F49" font-size="10.5" font-family="sans-serif">${goalVal}${CHART_METRIC === "bf" ? "%" : ""}</text>
+      <path d="${pathD}" fill="none" stroke="#1C1B18" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      ${xy.map(p => `<circle cx="${p.x}" cy="${p.y}" r="2.2" fill="#FCFBF8" stroke="#1C1B18" stroke-width="1.3"/>`).join("")}
+      <circle cx="${last.x}" cy="${last.y}" r="3.6" fill="#2B5F49"/>
+      <text x="${padL}" y="${H - 4}" fill="#847E72" font-size="10.5" font-family="sans-serif">${first.d.slice(2, 10)}</text>
+      <text x="${W - padR}" y="${H - 4}" text-anchor="end" fill="#847E72" font-size="10.5" font-family="sans-serif">${last.d.slice(2, 10)}</text>
+    </svg>
+  `;
+}
+
+function renderLedger(today, plan, body) {
+  const wk = plan.week;
+  const vit = STATE.vitals || {};
+  document.getElementById("ledger-kpis").innerHTML = `
+    <div>
+      <div class="kpi-val">${wk.bbHigh + wk.bbLight}<span style="font-size:13px; color:var(--ink-3); font-weight:400;"> 球 / </span>${wk.peloMain + wk.peloRec}<span style="font-size:13px; color:var(--ink-3); font-weight:400;"> 骑</span></div>
+      <div class="kpi-lbl">本周心肺</div>
+    </div>
+    <div>
+      <div class="kpi-val">${wk.puRounds}<span style="font-size:13px; color:var(--ink-3); font-weight:400;"> 轮</span></div>
+      <div class="kpi-lbl">本周引体</div>
+    </div>
+    <div>
+      <div class="kpi-val">${vit.rhr || "--"}<span style="font-size:13px; color:var(--ink-3); font-weight:400;"> / ${vit.vo2 || "--"}</span></div>
+      <div class="kpi-lbl">静息心率 / VO2</div>
+    </div>
+  `;
+
+  // Last 10 days clean ledger
+  let rowsHtml = "";
+  for (let i = 0; i < 10; i++) {
+    const d = shiftDate(today, -i);
+    const bb = getBasketballForDate(d);
+    const pelo = getPelotonForDate(d);
+    const de = getDayEntry(d);
+    const puCnt = (de.pu || []).length;
+    const parts = [];
+    if (bb) parts.push(bb.dur ? `篮球 ${bb.dur}分` : (bb.level === "high" ? "高强度篮球" : "轻投篮"));
+    if (pelo) {
+      if (pelo.status === "done") parts.push(`Peloton ${pelo.min || 40}分`);
+      else if (pelo.status === "recovery") parts.push("排酸恢复骑");
+      else if (pelo.status === "rest") parts.push("休整");
+    }
+    const actTxt = parts.length ? parts.join(" · ") : "未记心肺";
+    const puTxt = puCnt ? `引体 ${puCnt}轮` : "·";
+    const doneAll = (!!bb || !!pelo) && puCnt >= 1 && !!de.diet;
+    rowsHtml += `
+      <div class="day-row">
+        <span class="day-dt">${d.slice(5)}</span>
+        <span class="day-act" style="${parts.length ? "" : "color:var(--ink-3);"}">${actTxt}</span>
+        <span class="day-pu">${puTxt}</span>
+        <span class="day-dot ${doneAll ? "" : "muted"}">${doneAll ? "✓" : (de.diet ? "·" : "")}</span>
+      </div>
+    `;
+  }
+  document.getElementById("ledger-rows").innerHTML = rowsHtml;
+
+  // Gaps & Sync info
+  const gaps = (vit.gaps || []);
+  document.getElementById("sync-gaps").innerHTML = gaps.length
+    ? gaps.map(g => `<div>待补通：${g}</div>`).join("")
+    : `<div>云盘数据通路全部正常</div>`;
+  const driveSync = vit.last_drive_sync ? `云盘同步 ${vit.last_drive_sync}` : "";
+  document.getElementById("sync-status-txt").textContent = [driveSync, LAST_SYNC_NOTE].filter(Boolean).join(" · ") || "已就绪";
+}
+
+/* ===================== 7. INTERACTIONS ===================== */
+function switchTab(tab) {
+  CURRENT_TAB = tab;
+  document.querySelectorAll(".view-panel").forEach(el => el.classList.toggle("active", el.id === `view-${tab}`));
+  document.querySelectorAll("[data-tab]").forEach(el => el.classList.toggle("active", el.getAttribute("data-tab") === tab));
+  if (tab === "pullup") syncPullupInputDefault();
+  renderAll();
+}
+
+function ensureTodayDay() {
+  const today = getFitnessDate();
+  if (!STATE.days) STATE.days = {};
+  if (!STATE.days[today]) STATE.days[today] = { ts: 0, pu: [], diet: 0 };
+  STATE.days[today].ts = Math.floor(Date.now() / 1000);
+  return STATE.days[today];
+}
+
+function setPeloMin(m) {
+  SELECTED_PELO_MIN = m;
+  renderAll();
+}
+
+function markPeloton(status) {
+  const d = ensureTodayDay();
+  if (d.pelo === status) {
+    d.pelo = null;
+    d.pelo_min = 0;
+    showToast("已取消本次打卡");
+  } else {
+    d.pelo = status;
+    d.pelo_min = status === "done" ? SELECTED_PELO_MIN : (status === "recovery" ? 15 : 0);
+    showToast(status === "done" ? `Peloton ${d.pelo_min} 分钟已记` : (status === "recovery" ? "恢复骑已记" : "今日休整已确认"));
+  }
+  schedulePush();
+  renderAll();
+}
+
+function toggleBasketball(level) {
+  const d = ensureTodayDay();
+  if (d.bb === level) {
+    d.bb = null;
+    showToast("已恢复默认排课");
+  } else {
+    d.bb = level;
+    showToast(level === "high" ? "已切换红档 · 今晚 Peloton 取消高强度" : "已切换黄档 · 今晚降档恢复骑");
+  }
+  schedulePush();
+  renderAll();
+}
+
+function quickPullupTap(roundNum) {
+  const d = ensureTodayDay();
+  if (!Array.isArray(d.pu)) d.pu = [];
+  const stg = getPullupStage();
+  if (d.pu.length >= roundNum) {
+    d.pu = d.pu.slice(0, roundNum - 1);
+    showToast(`已撤销第 ${roundNum} 轮`);
+  } else {
+    while (d.pu.length < roundNum) {
+      d.pu.push([stg.defaultStrict, stg.negReps]);
+    }
+    showToast(`第 ${roundNum} 轮引体已记`);
+  }
+  schedulePush();
+  renderAll();
+}
+
+function adjStrict(delta) {
+  PU_STRICT_INPUT = Math.max(0, Math.min(10, PU_STRICT_INPUT + delta));
+  renderAll();
+}
+
+function logPullupRound() {
+  const d = ensureTodayDay();
+  if (!Array.isArray(d.pu)) d.pu = [];
+  if (d.pu.length >= 2) {
+    showToast("今天 2 轮已满额，明天继续更长劲");
+    return;
+  }
+  const neg = Math.max(0, 3 - PU_STRICT_INPUT);
+  d.pu.push([PU_STRICT_INPUT, neg]);
+  if (PU_STRICT_INPUT > (STATE.pu_best || 1)) {
+    STATE.pu_best = PU_STRICT_INPUT;
+    showToast(`新纪录！标准不甩 ${PU_STRICT_INPUT} 个`);
+  } else {
+    showToast(`第 ${d.pu.length} 轮已记`);
+  }
+  schedulePush();
+  renderAll();
+}
+
+function undoPullupRound() {
+  const d = ensureTodayDay();
+  if (Array.isArray(d.pu) && d.pu.length > 0) {
+    d.pu.pop();
+    schedulePush();
+    renderAll();
+    showToast("已撤销上一轮");
+  }
+}
+
+function toggleDiet() {
+  const d = ensureTodayDay();
+  d.diet = d.diet ? 0 : 1;
+  schedulePush();
+  renderAll();
+  showToast(d.diet ? "今日饮食节律已打卡" : "已取消");
+}
+
+function setChartMetric(m) {
+  CHART_METRIC = m;
+  renderAll();
+}
+function setChartRange(r) {
+  CHART_RANGE = r;
+  renderAll();
+}
+
+function toggleWeighForm() {
+  const f = document.getElementById("weigh-form");
+  const open = !f.classList.contains("open");
+  f.classList.toggle("open", open);
+  document.getElementById("toggle-weigh-btn").textContent = open ? "收起" : "记一次 GE 秤";
+}
+
+function saveManualWeigh() {
+  const wtVal = parseFloat(document.getElementById("in-wt").value);
+  const bfVal = parseFloat(document.getElementById("in-bf").value);
+  if (isNaN(wtVal) || wtVal < 40 || wtVal > 160) {
+    showToast("请输入有效体重 (kg)");
+    return;
+  }
+  const bf = (!isNaN(bfVal) && bfVal >= 5 && bfVal <= 45) ? +bfVal.toFixed(1) : null;
+  const today = getFitnessDate();
+  const d = ensureTodayDay();
+  d.wt = +wtVal.toFixed(2);
+  if (bf !== null) d.bf = bf;
+
+  if (!Array.isArray(STATE.wb)) STATE.wb = [];
+  const idx = STATE.wb.findIndex(r => r[0] === today);
+  const row = [today, +wtVal.toFixed(2), bf, "phone"];
+  if (idx >= 0) STATE.wb[idx] = row;
+  else STATE.wb.push(row);
+  STATE.wb.sort((a, b) => a[0].localeCompare(b[0]));
+
+  document.getElementById("in-wt").value = "";
+  document.getElementById("in-bf").value = "";
+  toggleWeighForm();
+  schedulePush();
+  renderAll();
+  showToast(bf !== null ? `已记 ${wtVal.toFixed(1)} kg · GE ${bf}%` : `已记体重 ${wtVal.toFixed(1)} kg`);
+}
+
+function forcePullCloud() {
+  pullFromCloud(false);
+}
+
+let TOAST_TIMER = null;
+function showToast(msg) {
+  const el = document.getElementById("zen-toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(TOAST_TIMER);
+  TOAST_TIMER = setTimeout(() => el.classList.remove("show"), 2200);
+}
+
+/* ===================== 8. BOOTSTRAP ===================== */
+async function boot() {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  }
+  const unlocked = await initVault();
+  if (!unlocked) {
+    document.getElementById("locked-view").style.display = "flex";
+    return;
+  }
+  document.getElementById("main-app").style.display = "flex";
+  loadLocalState();
+  syncPullupInputDefault();
+  renderAll();
+
+  await pullFromCloud(true);
+  try {
+    if (localStorage.getItem(PENDING_PUSH_KEY)) await pushToCloudNow();
+  } catch (e) {}
+
+  // Auto refresh when returning to phone app or after 04:00 AM PT date rollover
+  let lastRenderedDay = getFitnessDate();
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      const curDay = getFitnessDate();
+      if (curDay !== lastRenderedDay) {
+        lastRenderedDay = curDay;
+        renderAll();
+      }
+      pullFromCloud(true);
+    }
+  });
+  setInterval(() => {
+    const curDay = getFitnessDate();
+    if (curDay !== lastRenderedDay) {
+      lastRenderedDay = curDay;
+      renderAll();
+    }
+  }, 60000);
+}
+
+boot();
+</script>
+</body>
+</html>
