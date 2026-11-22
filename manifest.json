@@ -1,7 +1,8 @@
 {
+  "id": "./",
   "name": "体律",
   "short_name": "体律",
-  "description": "Minimalist Japanese Zen Dynamic Fitness & Body Rhythm",
+  "description": "极简禅意动态体能与体脂节律",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -13,13 +14,48 @@
       "src": "./icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "记一轮引体",
+      "short_name": "记引体",
+      "description": "一键记下家里门框单杠一轮引体",
+      "url": "./index.html?quick=pullup1",
+      "icons": [{ "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "刚打完高强度篮球",
+      "short_name": "打完篮球",
+      "description": "立刻切换红档，今晚自动取消高强度骑行",
+      "url": "./index.html?quick=bb_high",
+      "icons": [{ "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "记一次 GE 秤",
+      "short_name": "记体重",
+      "description": "免打字拨轮快速记下体重与体脂",
+      "url": "./index.html?quick=weigh",
+      "icons": [{ "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

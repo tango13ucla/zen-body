@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<meta name="theme-color" content="#F5F2EB" />
+<meta name="color-scheme" content="light dark" />
+<meta name="theme-color" content="#F5F2EB" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#171614" media="(prefers-color-scheme: dark)" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="体律" />
@@ -12,7 +14,7 @@
 <link rel="apple-touch-icon" href="./icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+JP:wght@500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+JP:wght@500;600&display=optional" rel="stylesheet" />
 <title>体律</title>
 <style>
   :root {
@@ -30,8 +32,31 @@
     --moss-soft: rgba(43, 95, 73, 0.09);
     --ochre: #A87633;
     --bengara: #9E3E36;
-    --sans: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", -apple-system, BlinkMacSystemFont, sans-serif;
-    --serif: "Hiragino Mincho ProN", "YuMincho", "Noto Serif JP", Georgia, serif;
+    --toast-bg: #1C1B18;
+    --toast-fg: #FCFBF8;
+    --sans: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Noto Sans CJK SC", -apple-system, BlinkMacSystemFont, sans-serif;
+    --serif: "Hiragino Mincho ProN", "YuMincho", "Noto Serif JP", "Noto Serif CJK SC", "Songti SC", Georgia, serif;
+  }
+
+  /* Adaptive Night-Ink Zen Mode (夜墨) */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --washi: #171614;
+      --sheet: #201F1C;
+      --sumi: #EAE5DA;
+      --ink-2: #B9B2A5;
+      --ink-3: #868074;
+      --hairline: rgba(234, 229, 218, 0.09);
+      --hairline-strong: rgba(234, 229, 218, 0.21);
+      --track: #2F2D28;
+      --moss: #62AD89;
+      --moss-solid: #3F8B66;
+      --moss-soft: rgba(98, 173, 137, 0.14);
+      --ochre: #D2A35C;
+      --bengara: #D46F66;
+      --toast-bg: #EAE5DA;
+      --toast-fg: #171614;
+    }
   }
 
   * {
@@ -61,7 +86,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: calc(14px + env(safe-area-inset-top)) 26px calc(14px + env(safe-area-inset-bottom));
+    padding: calc(14px + env(safe-area-inset-top)) 24px calc(14px + env(safe-area-inset-bottom));
   }
 
   .zen-shell {
@@ -71,6 +96,15 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
+    position: relative;
+  }
+
+  #main-app {
+    animation: appFadeIn 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes appFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   /* Strict portrait guard on mobile */
@@ -85,14 +119,14 @@
     left: 0;
     width: var(--fp-h) !important;
     height: var(--fp-w) !important;
-    padding-left: 26px;
-    padding-right: 26px;
+    padding-left: 24px;
+    padding-right: 24px;
     transform-origin: 0 0;
   }
   html.fp-90 body { transform: translateY(var(--fp-h)) rotate(-90deg); }
   html.fp-270 body { transform: translateX(var(--fp-w)) rotate(90deg); }
 
-  button {
+  button, a {
     font-family: inherit;
     white-space: nowrap;
     background: none;
@@ -100,6 +134,7 @@
     padding: 0;
     color: inherit;
     cursor: pointer;
+    text-decoration: none;
   }
 
   input {
@@ -136,6 +171,7 @@
   .zen-nav {
     display: flex;
     gap: 22px;
+    position: relative;
   }
   .nav-link {
     font-size: 14.5px;
@@ -149,14 +185,15 @@
     color: var(--sumi);
     font-weight: 600;
   }
-  .nav-link.active::after {
-    content: "";
+  .desk-ink-bar {
     position: absolute;
     left: 0;
-    right: 0;
     bottom: -2px;
     height: 1.5px;
     background: var(--sumi);
+    border-radius: 2px;
+    pointer-events: none;
+    transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), width 0.26s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   /* Top Horizon Bar: 3 Zen Enso Circles + Quiet Target Metric */
@@ -165,7 +202,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 4px 0 12px;
+    padding: 4px 0 10px;
   }
   .enso-trio {
     display: flex;
@@ -185,13 +222,22 @@
     display: block;
     overflow: visible;
   }
-  .enso-item.is-done .enso-svg {
-    animation: ensoSettle 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+  .enso-item.just-done .enso-fill {
+    animation: ensoPop 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+    transform-origin: 14px 14px;
   }
-  @keyframes ensoSettle {
-    0% { transform: scale(0.88); opacity: 0.7; }
-    65% { transform: scale(1.05); opacity: 1; }
+  .enso-item.just-done .enso-check {
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    animation: checkDraw 0.34s 0.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  @keyframes ensoPop {
+    0% { transform: scale(0.76); opacity: 0.55; }
+    62% { transform: scale(1.08); opacity: 1; }
     100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes checkDraw {
+    to { stroke-dashoffset: 0; }
   }
   .horizon-metric {
     font-size: 13.5px;
@@ -205,6 +251,38 @@
     font-weight: 600;
   }
 
+  /* Pull-to-Refresh Zen Ring */
+  .ptr-wrap {
+    flex-shrink: 0;
+    height: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    opacity: 0;
+    transition: height 0.24s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+  }
+  .ptr-wrap.dragging {
+    transition: none;
+  }
+  .ptr-svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+  }
+  .ptr-wrap.syncing .ptr-svg {
+    animation: ptrSpin 0.85s linear infinite;
+  }
+  @keyframes ptrSpin {
+    to { transform: rotate(360deg); }
+  }
+  .ptr-lbl {
+    font-size: 12px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+  }
+
   /* Main Viewport: Airy Ma spacing, pushes interactive controls into right-thumb zone on mobile */
   .zen-stage {
     flex: 1;
@@ -212,14 +290,16 @@
     display: flex;
     flex-direction: column;
     overflow-y: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    position: relative;
   }
   .zen-stage::-webkit-scrollbar { display: none; }
 
   .stage-spacer {
     flex: 1 1 20px;
-    min-height: 16px;
+    min-height: 14px;
   }
 
   .view-panel {
@@ -227,9 +307,24 @@
     flex-direction: column;
     flex: 1;
     min-height: 100%;
+    will-change: transform, opacity;
   }
   .view-panel.active {
     display: flex;
+  }
+  .view-panel.slide-from-right {
+    animation: slideFromRight 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .view-panel.slide-from-left {
+    animation: slideFromLeft 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes slideFromRight {
+    from { opacity: 0.25; transform: translateX(18px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideFromLeft {
+    from { opacity: 0.25; transform: translateX(-18px); }
+    to { opacity: 1; transform: translateX(0); }
   }
 
   /* Quiet Context Line */
@@ -243,9 +338,7 @@
     align-items: baseline;
     gap: 12px;
   }
-  .tier-tag {
-    font-weight: 500;
-  }
+  .tier-tag { font-weight: 500; }
   .tier-tag.green { color: var(--moss); }
   .tier-tag.yellow { color: var(--ochre); }
   .tier-tag.red { color: var(--bengara); }
@@ -256,26 +349,31 @@
     background: var(--sheet);
     border: 1px solid var(--hairline);
     border-radius: 14px;
-    padding: 26px 24px 22px;
-    transition: border-color 0.25s ease;
+    padding: 25px 22px 21px;
+    transition: border-color 0.28s ease, background-color 0.28s ease;
   }
   .focal-sheet.done {
-    border-color: rgba(43, 95, 73, 0.28);
+    border-color: rgba(43, 95, 73, 0.32);
+  }
+  @media (prefers-color-scheme: dark) {
+    .focal-sheet.done {
+      border-color: rgba(98, 173, 137, 0.36);
+    }
   }
 
   .focal-eyebrow {
     font-size: 12.5px;
     color: var(--ink-3);
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     margin-bottom: 10px;
   }
   .focal-title {
     font-family: var(--serif);
-    font-size: 24px;
+    font-size: clamp(20px, 5.3vw, 23px);
     font-weight: 600;
-    line-height: 1.42;
+    line-height: 1.4;
     color: var(--sumi);
-    margin: 0 0 12px;
+    margin: 0 0 11px;
     letter-spacing: 0.01em;
   }
   .focal-sub {
@@ -286,11 +384,11 @@
   }
 
   .focal-actions {
-    margin-top: 24px;
+    margin-top: 22px;
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 18px;
+    gap: 16px;
   }
 
   /* Primary Solid Ink / Moss Button */
@@ -299,18 +397,19 @@
     padding: 0 22px;
     border-radius: 999px;
     background: var(--sumi);
-    color: var(--sheet);
+    color: var(--washi);
     font-size: 14.5px;
     font-weight: 500;
     letter-spacing: 0.04em;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.16s ease, background 0.22s ease, opacity 0.2s ease;
+    transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.24s ease, opacity 0.2s ease;
   }
   .btn-primary:active { transform: scale(0.96); }
   .btn-primary.is-done {
-    background: var(--moss);
+    background: var(--moss-solid);
+    color: #FCFBF8;
   }
 
   /* Frameless Muted Ink Secondary Action */
@@ -318,11 +417,11 @@
     font-size: 13.5px;
     font-weight: 500;
     color: var(--ink-3);
-    padding: 10px 4px;
+    padding: 9px 4px;
     letter-spacing: 0.02em;
-    transition: color 0.18s ease;
+    transition: color 0.18s ease, opacity 0.18s ease;
   }
-  .btn-quiet:active { color: var(--sumi); }
+  .btn-quiet:active { color: var(--sumi); opacity: 0.75; }
   .btn-quiet.is-active {
     color: var(--bengara);
     font-weight: 600;
@@ -337,21 +436,30 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 18px;
-    margin-top: 12px;
+    gap: 14px;
+    margin-top: 10px;
     padding: 0 2px;
   }
+  .radio-bridge {
+    margin-right: auto;
+    font-size: 12.5px;
+    color: var(--ink-3);
+    padding: 9px 2px;
+    letter-spacing: 0.02em;
+    transition: color 0.18s ease;
+  }
+  .radio-bridge:active { color: var(--moss); }
 
   /* Frameless Hairline Ritual Rows (Today pull-up + diet) */
   .ritual-list {
-    margin-top: 22px;
+    margin-top: 20px;
     border-top: 1px solid var(--hairline);
   }
   .ritual-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 2px;
+    padding: 15px 2px;
     border-bottom: 1px solid var(--hairline);
     gap: 12px;
   }
@@ -369,6 +477,7 @@
   .ritual-hint {
     font-size: 12.5px;
     color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
   }
   .ritual-right {
     display: flex;
@@ -381,8 +490,9 @@
     font-weight: 500;
     color: var(--ink-2);
     padding: 8px 2px;
-    transition: color 0.18s ease;
+    transition: color 0.2s ease, transform 0.14s ease;
   }
+  .tap-check:active { transform: scale(0.95); }
   .tap-check.done {
     color: var(--moss);
     font-weight: 600;
@@ -390,8 +500,8 @@
 
   /* Pull-up View Controls */
   .rep-row {
-    margin-top: 20px;
-    padding-top: 16px;
+    margin-top: 18px;
+    padding-top: 15px;
     border-top: 1px solid var(--hairline);
     display: flex;
     justify-content: space-between;
@@ -414,8 +524,9 @@
     justify-content: center;
     font-size: 16px;
     color: var(--sumi);
+    transition: background-color 0.15s ease, transform 0.12s ease;
   }
-  .step-btn:active { background: rgba(28, 27, 24, 0.05); }
+  .step-btn:active { background: var(--hairline); transform: scale(0.93); }
   .step-val {
     font-family: var(--serif);
     font-size: 20px;
@@ -424,12 +535,60 @@
     text-align: center;
   }
 
+  /* Zen 4-Second Eccentric Breathing Pacer */
+  .pacer-box {
+    display: none;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--hairline);
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    animation: appFadeIn 0.22s ease;
+  }
+  .pacer-box.open { display: flex; }
+  .pacer-ring-wrap {
+    position: relative;
+    width: 112px;
+    height: 112px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .pacer-svg {
+    width: 112px;
+    height: 112px;
+    display: block;
+    overflow: visible;
+  }
+  .pacer-num {
+    position: absolute;
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--sumi);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .pacer-phase {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--ink-2);
+    letter-spacing: 0.04em;
+  }
+  .pacer-controls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-top: 2px;
+  }
+
   .stage-ladder {
-    margin-top: 22px;
+    margin-top: 20px;
     display: flex;
     justify-content: space-between;
     gap: 8px;
-    padding-top: 16px;
+    padding-top: 15px;
     border-top: 1px solid var(--hairline);
   }
   .ladder-step {
@@ -442,6 +601,7 @@
     height: 2px;
     background: var(--track);
     border-radius: 2px;
+    transition: background-color 0.25s ease;
   }
   .ladder-step.past .ladder-bar,
   .ladder-step.now .ladder-bar {
@@ -462,7 +622,7 @@
     justify-content: space-between;
     align-items: baseline;
     gap: 16px;
-    margin-bottom: 18px;
+    margin-bottom: 14px;
   }
   .stat-big {
     font-family: var(--serif);
@@ -471,6 +631,10 @@
     line-height: 1.1;
     font-variant-numeric: tabular-nums;
     color: var(--sumi);
+    transition: color 0.16s ease;
+  }
+  .stat-big.scrubbing {
+    color: var(--moss);
   }
   .stat-unit {
     font-family: var(--sans);
@@ -487,11 +651,15 @@
   }
   .chart-wrap {
     width: 100%;
-    margin: 6px 0 4px;
+    margin: 4px 0 2px;
+    touch-action: pan-y;
+    cursor: crosshair;
+    position: relative;
   }
   .chart-svg {
     width: 100%;
-    height: 158px;
+    height: auto;
+    aspect-ratio: 360 / 156;
     display: block;
     overflow: visible;
   }
@@ -499,8 +667,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 10px;
-    padding-top: 12px;
+    margin-top: 8px;
+    padding-top: 11px;
     border-top: 1px solid var(--hairline);
   }
   .switch-group {
@@ -508,52 +676,113 @@
     gap: 14px;
   }
 
-  /* Inline Minimal Weigh-in Drawer (no heavy modal) */
-  .weigh-form {
+  /* Zero-Keyboard Tactile Dial Weigh-in Drawer */
+  .weigh-drawer {
     display: none;
     margin-top: 14px;
     padding-top: 14px;
     border-top: 1px solid var(--hairline);
-    gap: 12px;
-    align-items: flex-end;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 14px;
+    animation: appFadeIn 0.2s ease;
   }
-  .weigh-form.open { display: flex; }
-  .field-mini {
+  .weigh-drawer.open { display: flex; }
+  .dial-row {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    flex: 1;
+    gap: 6px;
   }
-  .field-mini label {
-    font-size: 11.5px;
+  .dial-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .dial-label {
+    font-size: 12.5px;
     color: var(--ink-3);
   }
-  .field-mini input {
-    width: 100%;
-    height: 38px;
-    border: none;
-    border-bottom: 1px solid var(--hairline-strong);
-    background: transparent;
-    font-size: 16px;
-    font-variant-numeric: tabular-nums;
-    color: var(--sumi);
-    outline: none;
-    padding: 0 2px;
+  .dial-ctrl {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
   }
-  .field-mini input:focus { border-bottom-color: var(--sumi); }
+  .dial-val-btn {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--sumi);
+    font-variant-numeric: tabular-nums;
+    min-width: 68px;
+    text-align: center;
+    border-bottom: 1px dashed var(--hairline-strong);
+    padding-bottom: 1px;
+  }
+  .dial-inline-input {
+    width: 68px;
+    font-family: var(--serif);
+    font-size: 19px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--sumi);
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid var(--moss);
+    outline: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .dial-track {
+    position: relative;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--washi);
+    border: 1px solid var(--hairline);
+    overflow: hidden;
+    touch-action: none;
+    cursor: ew-resize;
+  }
+  .dial-ticks {
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(
+        90deg,
+        transparent 0,
+        transparent 9px,
+        var(--hairline-strong) 9px,
+        var(--hairline-strong) 10px
+      );
+    background-size: 50px 100%;
+    opacity: 0.85;
+  }
+  .dial-needle {
+    position: absolute;
+    left: 50%;
+    top: 4px;
+    bottom: 4px;
+    width: 2px;
+    margin-left: -1px;
+    background: var(--moss);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  .dial-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2px;
+  }
 
   /* Ledger View (总账) */
   .ledger-kpis {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 14px;
-    padding-bottom: 18px;
+    padding-bottom: 16px;
     border-bottom: 1px solid var(--hairline);
   }
   .kpi-val {
     font-family: var(--serif);
-    font-size: 22px;
+    font-size: 21px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     color: var(--sumi);
@@ -564,16 +793,24 @@
     margin-top: 3px;
   }
   .day-ledger {
-    margin-top: 8px;
+    margin-top: 6px;
+  }
+  .day-item {
+    border-bottom: 1px solid var(--hairline);
   }
   .day-row {
+    width: 100%;
     display: grid;
-    grid-template-columns: 62px 1fr 56px 46px;
+    grid-template-columns: 56px 1fr 54px 30px;
     align-items: center;
-    padding: 11px 0;
-    border-bottom: 1px solid var(--hairline);
+    padding: 12px 2px;
     font-size: 13px;
     font-variant-numeric: tabular-nums;
+    text-align: left;
+    transition: background-color 0.16s ease;
+  }
+  .day-row:active {
+    background: var(--hairline);
   }
   .day-dt { color: var(--ink-3); }
   .day-act { color: var(--sumi); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -581,9 +818,47 @@
   .day-dot { text-align: right; color: var(--moss); font-weight: 600; }
   .day-dot.muted { color: var(--track); font-weight: 400; }
 
+  /* Inline Editable Ledger Drawer */
+  .ledger-editor {
+    padding: 4px 2px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    animation: appFadeIn 0.18s ease;
+  }
+  .ed-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    font-size: 12.5px;
+  }
+  .ed-lbl {
+    color: var(--ink-3);
+    min-width: 32px;
+    font-size: 12px;
+  }
+  .ed-chip {
+    font-size: 12.5px;
+    color: var(--ink-2);
+    padding: 4px 2px;
+    border-bottom: 1px solid transparent;
+    transition: color 0.16s ease, border-color 0.16s ease;
+  }
+  .ed-chip.on {
+    color: var(--moss);
+    font-weight: 600;
+    border-bottom-color: var(--moss);
+  }
+  .ed-chip.on-red {
+    color: var(--bengara);
+    font-weight: 600;
+    border-bottom-color: var(--bengara);
+  }
+
   .sync-footer {
-    margin-top: 18px;
-    padding-top: 12px;
+    margin-top: 16px;
+    padding-top: 10px;
     font-size: 12.5px;
     line-height: 1.7;
     color: var(--ink-3);
@@ -592,6 +867,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
     margin-top: 6px;
   }
 
@@ -602,53 +878,56 @@
     justify-content: flex-end;
     align-items: center;
     border-top: 1px solid var(--hairline);
-    margin-top: 10px;
+    margin-top: 8px;
   }
   .thumb-tabs {
     display: flex;
     align-items: stretch;
     margin-right: -10px;
+    position: relative;
+  }
+  .thumb-ink-bar {
+    position: absolute;
+    left: 0;
+    top: -1px;
+    height: 1.8px;
+    background: var(--sumi);
+    border-radius: 2px;
+    pointer-events: none;
+    transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), width 0.26s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .thumb-link {
     position: relative;
-    height: 52px;
+    height: 50px;
     min-width: 58px;
     padding: 0 12px;
     font-size: 15.5px;
     font-weight: 500;
     color: var(--ink-3);
     letter-spacing: 0.04em;
-    transition: color 0.18s ease;
+    transition: color 0.2s ease;
   }
   .thumb-link.active {
     color: var(--sumi);
     font-weight: 600;
   }
-  .thumb-link.active::after {
-    content: "";
-    position: absolute;
-    left: 16px;
-    right: 16px;
-    top: 0;
-    height: 1.5px;
-    background: var(--sumi);
-  }
 
-  /* Quiet Toast */
+  /* Quiet Toast (floats in open upper Ma space, never blocks thumb controls) */
   .zen-toast {
     position: fixed;
     left: 50%;
-    bottom: 80px;
-    transform: translateX(-50%) translateY(8px);
-    background: var(--sumi);
-    color: var(--sheet);
-    font-size: 13px;
-    padding: 9px 18px;
+    top: calc(52px + env(safe-area-inset-top));
+    transform: translateX(-50%) translateY(-6px);
+    background: var(--toast-bg);
+    color: var(--toast-fg);
+    font-size: 12.5px;
+    padding: 8px 16px;
     border-radius: 999px;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.22s ease, transform 0.22s ease;
+    transition: opacity 0.2s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
     z-index: 40;
+    white-space: nowrap;
   }
   .zen-toast.show {
     opacity: 0.94;
@@ -683,8 +962,8 @@
     .zen-shell { max-width: 580px; }
     .zen-header { display: flex; }
     .thumb-nav { display: none; }
-    .stage-spacer { flex: 0 0 24px; min-height: 16px; }
-    .focal-sheet { padding: 30px 28px 26px; }
+    .stage-spacer { flex: 0 0 22px; min-height: 14px; }
+    .focal-sheet { padding: 28px 26px 24px; }
   }
 </style>
 </head>
@@ -693,18 +972,19 @@
   <!-- Desktop Header -->
   <header class="zen-header">
     <div class="zen-brand">体律<span id="desk-date"></span></div>
-    <nav class="zen-nav">
+    <nav class="zen-nav" id="desk-nav">
       <button class="nav-link active" data-tab="today" onclick="switchTab('today')">今日</button>
       <button class="nav-link" data-tab="pullup" onclick="switchTab('pullup')">引体</button>
       <button class="nav-link" data-tab="body" onclick="switchTab('body')">体脂</button>
       <button class="nav-link" data-tab="ledger" onclick="switchTab('ledger')">总账</button>
+      <span class="desk-ink-bar" id="desk-ink-bar"></span>
     </nav>
   </header>
 
   <!-- Locked View (shown only when opened without personal encrypted bookmark) -->
   <div class="locked-shell" id="locked-view" style="display:none;">
     <svg width="42" height="42" viewBox="0 0 28 28" aria-hidden="true">
-      <circle cx="14" cy="14" r="10.2" fill="none" stroke="#2B5F49" stroke-width="2.1" stroke-dasharray="55 10" stroke-linecap="round"/>
+      <circle cx="14" cy="14" r="10.2" fill="none" stroke="var(--moss)" stroke-width="2.1" stroke-dasharray="55 10" stroke-linecap="round"/>
     </svg>
     <div class="locked-title">体律</div>
     <p class="locked-sub">此页面不含任何公开个人数据。<br />请用你的专属私密链接打开，或把专属链接粘在下方即可解锁本设备。</p>
@@ -722,8 +1002,17 @@
       <div class="horizon-metric" id="horizon-metric"></div>
     </div>
 
-    <!-- Scrollable Focal Stage -->
-    <main class="zen-stage">
+    <!-- Pull-to-Refresh Quiet Zen Enso -->
+    <div class="ptr-wrap" id="ptr-wrap" aria-hidden="true">
+      <svg class="ptr-svg" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="8.5" fill="none" stroke="var(--hairline-strong)" stroke-width="1.6"/>
+        <circle id="ptr-arc" cx="12" cy="12" r="8.5" pathLength="100" fill="none" stroke="var(--moss)" stroke-width="2" stroke-linecap="round" stroke-dasharray="0 100" transform="rotate(-90 12 12)"/>
+      </svg>
+      <span class="ptr-lbl" id="ptr-lbl">下拉同步</span>
+    </div>
+
+    <!-- Scrollable Focal Stage (with One-Thumb Horizontal Swipe & Pull-to-Refresh) -->
+    <main class="zen-stage" id="zen-stage">
       <!-- TAB 1: 今日 -->
       <section class="view-panel active" id="view-today">
         <div class="stage-spacer"></div>
@@ -786,8 +1075,25 @@
             </div>
           </div>
 
+          <!-- Inline 4-Second Eccentric Breathing Pacer -->
+          <div class="pacer-box" id="pacer-box">
+            <div class="pacer-ring-wrap">
+              <svg class="pacer-svg" viewBox="0 0 100 100" aria-hidden="true">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="var(--track)" stroke-width="2.6"/>
+                <circle id="pacer-arc" cx="50" cy="50" r="42" pathLength="100" fill="none" stroke="var(--moss)" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="100 100" transform="rotate(-90 50 50)"/>
+              </svg>
+              <div class="pacer-num" id="pacer-num">4</div>
+            </div>
+            <div class="pacer-phase" id="pacer-phase">准备抓稳单杠</div>
+            <div class="pacer-controls">
+              <button class="btn-quiet" id="pacer-sound-btn" onclick="togglePacerSound()">轻音：关</button>
+              <button class="btn-quiet" onclick="stopPacer(true)">停止</button>
+            </div>
+          </div>
+
           <div class="focal-actions">
-            <button class="btn-quiet" id="pu-undo-btn" onclick="undoPullupRound()" style="display:none;">撤销上轮</button>
+            <button class="btn-quiet" id="pu-undo-btn" onclick="undoPullupRound()" style="display:none; margin-right:auto;">撤销上轮</button>
+            <button class="btn-quiet" id="pu-pacer-btn" onclick="togglePacer()">4 秒慢放节拍</button>
             <button class="btn-primary" id="pu-log-btn" onclick="logPullupRound()"></button>
           </div>
         </div>
@@ -799,7 +1105,7 @@
       <section class="view-panel" id="view-body">
         <div class="stage-spacer"></div>
         <div class="context-line">
-          <span>GE 智能秤趋势</span>
+          <span id="body-context-left">GE 智能秤趋势</span>
           <span id="body-pace-label"></span>
         </div>
 
@@ -815,7 +1121,7 @@
             </div>
           </div>
 
-          <div class="chart-wrap" id="body-chart-wrap"></div>
+          <div class="chart-wrap" id="body-chart-wrap" data-no-swipe="1"></div>
 
           <div class="chart-switches">
             <div class="switch-group">
@@ -828,16 +1134,46 @@
             </div>
           </div>
 
-          <div class="weigh-form" id="weigh-form">
-            <div class="field-mini">
-              <label for="in-wt">体重 (kg)</label>
-              <input id="in-wt" type="number" step="0.05" inputmode="decimal" placeholder="81.5" />
+          <!-- Zero-Keyboard Tactile Dial Weigh-in -->
+          <div class="weigh-drawer" id="weigh-drawer" data-no-swipe="1">
+            <div class="dial-row">
+              <div class="dial-head">
+                <span class="dial-label">体重 (kg)</span>
+                <div class="dial-ctrl">
+                  <button class="step-btn" style="width:28px; height:28px; font-size:14px;" onclick="nudgeDial('wt', -0.1)" aria-label="减0.1">−</button>
+                  <span id="dial-wt-slot">
+                    <button class="dial-val-btn" id="dial-wt-val" onclick="editDialInline('wt')">81.5</button>
+                  </span>
+                  <button class="step-btn" style="width:28px; height:28px; font-size:14px;" onclick="nudgeDial('wt', 0.1)" aria-label="加0.1">+</button>
+                </div>
+              </div>
+              <div class="dial-track" id="dial-track-wt" data-no-swipe="1">
+                <div class="dial-ticks" id="dial-ticks-wt"></div>
+                <div class="dial-needle"></div>
+              </div>
             </div>
-            <div class="field-mini">
-              <label for="in-bf">GE 体脂 (%)</label>
-              <input id="in-bf" type="number" step="0.1" inputmode="decimal" placeholder="17.8" />
+
+            <div class="dial-row">
+              <div class="dial-head">
+                <span class="dial-label">GE 体脂 (%)</span>
+                <div class="dial-ctrl">
+                  <button class="step-btn" style="width:28px; height:28px; font-size:14px;" onclick="nudgeDial('bf', -0.1)" aria-label="减0.1">−</button>
+                  <span id="dial-bf-slot">
+                    <button class="dial-val-btn" id="dial-bf-val" onclick="editDialInline('bf')">18.0</button>
+                  </span>
+                  <button class="step-btn" style="width:28px; height:28px; font-size:14px;" onclick="nudgeDial('bf', 0.1)" aria-label="加0.1">+</button>
+                </div>
+              </div>
+              <div class="dial-track" id="dial-track-bf" data-no-swipe="1">
+                <div class="dial-ticks" id="dial-ticks-bf"></div>
+                <div class="dial-needle"></div>
+              </div>
             </div>
-            <button class="btn-primary" style="height:38px; padding:0 16px; font-size:13.5px;" onclick="saveManualWeigh()">记下</button>
+
+            <div class="dial-footer">
+              <button class="btn-quiet" id="dial-bf-skip-btn" onclick="toggleSkipBf()">仅记体重</button>
+              <button class="btn-primary" style="height:38px; padding:0 18px; font-size:13.5px;" onclick="saveDialWeigh()">记下</button>
+            </div>
           </div>
         </div>
 
@@ -856,7 +1192,10 @@
           <div id="sync-gaps"></div>
           <div class="sync-row">
             <span id="sync-status-txt">云端加密同步中</span>
-            <button class="btn-quiet" onclick="forcePullCloud()">立即同步</button>
+            <span style="display:flex; gap:14px; align-items:center;">
+              <button class="btn-quiet" id="install-app-btn" onclick="triggerInstallApp()" style="display:none; color:var(--moss);">装到桌面</button>
+              <button class="btn-quiet" onclick="forcePullCloud()">立即同步</button>
+            </span>
           </div>
         </div>
       </section>
@@ -864,7 +1203,8 @@
 
     <!-- Mobile Bottom-Right Thumb Nav -->
     <nav class="thumb-nav">
-      <div class="thumb-tabs">
+      <div class="thumb-tabs" id="thumb-tabs">
+        <span class="thumb-ink-bar" id="thumb-ink-bar"></span>
         <button class="thumb-link active" data-tab="today" onclick="switchTab('today')">今日</button>
         <button class="thumb-link" data-tab="pullup" onclick="switchTab('pullup')">引体</button>
         <button class="thumb-link" data-tab="body" onclick="switchTab('body')">体脂</button>
@@ -881,6 +1221,7 @@
 
 /* ===================== 1. STRICT PORTRAIT GUARD (Mobile) ===================== */
 let FP_ANGLE = 0;
+let APP_READY = false;
 function tryLockPortrait() {
   try {
     if (screen && screen.orientation && typeof screen.orientation.lock === "function") {
@@ -908,11 +1249,13 @@ function applyPortraitGuard() {
     root.style.setProperty("--fp-w", w + "px");
     root.style.setProperty("--fp-h", h + "px");
   }
+  if (APP_READY) positionNavBars(true);
 }
 applyPortraitGuard();
 tryLockPortrait();
 window.addEventListener("resize", applyPortraitGuard);
 window.addEventListener("orientationchange", () => { tryLockPortrait(); setTimeout(applyPortraitGuard, 60); });
+document.addEventListener("touchstart", tryLockPortrait, { once: true, passive: true });
 
 /* ===================== 2. DATE & TIMEZONE (PT, 04:00 AM ROLLOVER) ===================== */
 function getPTNow(offsetHours = 0) {
@@ -934,8 +1277,18 @@ function getPTNow(offsetHours = 0) {
     weekday: map.weekday
   };
 }
+function formatEpochPT(epochSec) {
+  if (!epochSec) return "";
+  const dt = new Date(epochSec * 1000);
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "America/Los_Angeles",
+    hour: "2-digit", minute: "2-digit", hour12: false
+  }).formatToParts(dt);
+  const m = {};
+  for (const p of parts) m[p.type] = p.value;
+  return `${m.hour}:${m.minute}`;
+}
 function getFitnessDate() {
-  // Rolls over at 04:00 AM PT so midnight finishers stay on today
   return getPTNow(-4).ymd;
 }
 function shiftDate(ymd, deltaDays) {
@@ -952,7 +1305,7 @@ function formatCnDate(ymd) {
 function getMondayOfWeek(ymd) {
   const [y, m, d] = ymd.split("-").map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d, 12));
-  const dow = dt.getUTCDay(); // 0=Sun..6=Sat
+  const dow = dt.getUTCDay();
   const diff = dow === 0 ? -6 : 1 - dow;
   return shiftDate(ymd, diff);
 }
@@ -978,6 +1331,26 @@ function bytesToB64u(bytes) {
 
 let VAULT = null;
 let CRYPTO_KEY = null;
+let DEFERRED_INSTALL_PROMPT = null;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  DEFERRED_INSTALL_PROMPT = e;
+  const btn = document.getElementById("install-app-btn");
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+  if (btn && !isStandalone) btn.style.display = "inline-block";
+});
+
+async function triggerInstallApp() {
+  if (!DEFERRED_INSTALL_PROMPT) return;
+  try {
+    DEFERRED_INSTALL_PROMPT.prompt();
+    await DEFERRED_INSTALL_PROMPT.userChoice;
+  } catch (e) {}
+  DEFERRED_INSTALL_PROMPT = null;
+  const btn = document.getElementById("install-app-btn");
+  if (btn) btn.style.display = "none";
+}
 
 async function saveVaultEverywhere(v) {
   try { localStorage.setItem(VAULT_STORAGE_KEY, JSON.stringify(v)); } catch (e) {}
@@ -1003,19 +1376,48 @@ async function loadVaultFromCache() {
 function updateDynamicManifest(v) {
   try {
     const base = window.location.origin + window.location.pathname.replace(/index\.html$/, "");
+    const hashSuffix = `#t=${encodeURIComponent(v.t)}&k=${encodeURIComponent(v.k)}`;
+    const isDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const bg = isDark ? "#171614" : "#F5F2EB";
     const manifestObj = {
+      id: base,
       name: "体律",
       short_name: "体律",
       description: "极简禅意动态体能与体脂节律",
-      start_url: `${base}#t=${encodeURIComponent(v.t)}&k=${encodeURIComponent(v.k)}`,
+      start_url: `${base}${hashSuffix}`,
       scope: base,
       display: "standalone",
       orientation: "portrait-primary",
-      background_color: "#F5F2EB",
-      theme_color: "#F5F2EB",
+      background_color: bg,
+      theme_color: bg,
       icons: [
-        { src: `${base}icon-192.png`, sizes: "192x192", type: "image/png", purpose: "any maskable" },
-        { src: `${base}icon-512.png`, sizes: "512x512", type: "image/png", purpose: "any maskable" }
+        { src: `${base}icon-192.png`, sizes: "192x192", type: "image/png", purpose: "any" },
+        { src: `${base}icon-192.png`, sizes: "192x192", type: "image/png", purpose: "maskable" },
+        { src: `${base}icon-512.png`, sizes: "512x512", type: "image/png", purpose: "any" },
+        { src: `${base}icon-512.png`, sizes: "512x512", type: "image/png", purpose: "maskable" }
+      ],
+      shortcuts: [
+        {
+          name: "记一轮引体",
+          short_name: "记引体",
+          description: "一键记下家里单杠一轮引体",
+          url: `${base}index.html?quick=pullup1${hashSuffix}`,
+          icons: [{ src: `${base}icon-192.png`, sizes: "192x192", type: "image/png" }]
+        },
+        {
+          name: "刚打完高强度篮球",
+          short_name: "打完篮球",
+          description: "切换红档，今晚取消高强度骑行",
+          url: `${base}index.html?quick=bb_high${hashSuffix}`,
+          icons: [{ src: `${base}icon-192.png`, sizes: "192x192", type: "image/png" }]
+        },
+        {
+          name: "记一次 GE 秤",
+          short_name: "记体重",
+          description: "拨轮快记体重与体脂",
+          url: `${base}index.html?quick=weigh${hashSuffix}`,
+          icons: [{ src: `${base}icon-192.png`, sizes: "192x192", type: "image/png" }]
+        }
       ]
     };
     const link = document.querySelector('link[rel="manifest"]');
@@ -1037,20 +1439,17 @@ function parseVaultFromStr(str) {
 }
 
 async function initVault() {
-  // 1. Check URL hash first: #t=<topic>&k=<key> (keep hash intact so iOS/Android Add-to-Home-Screen preserves it!)
   const fromHash = parseVaultFromStr(window.location.hash || "");
   if (fromHash) {
     VAULT = fromHash;
     await saveVaultEverywhere(VAULT);
   }
-  // 2. Fallback to localStorage
   if (!VAULT) {
     try {
       const saved = localStorage.getItem(VAULT_STORAGE_KEY);
       if (saved) VAULT = JSON.parse(saved);
     } catch (e) {}
   }
-  // 3. Fallback to Cache Storage (bridging Safari <-> standalone on iOS)
   if (!VAULT) {
     const cached = await loadVaultFromCache();
     if (cached && cached.t && cached.k) {
@@ -1123,10 +1522,11 @@ function defaultState() {
     trips: [],
     wb: [],   // [dateStr, kg, bfOrNull, src]
     acts: [], // [dateStr, type('bb'|'pelo'|'cyc'), durMin, kcal, avgHr, maxHr, src]
-    days: {}  // ymd -> { ts, bb, pelo, pelo_min, pu: [[strict,neg],...], diet: 0|1, wt, bf }
+    days: {}  // ymd -> { ts, bb, pelo, pelo_min, pu: [[strict,neg,epochSec?],...], diet: 0|1, wt, bf }
   };
 }
 
+const TAB_ORDER = ["today", "pullup", "body", "ledger"];
 let STATE = defaultState();
 let CURRENT_TAB = "today";
 let CHART_METRIC = "bf";
@@ -1135,6 +1535,26 @@ let SELECTED_PELO_MIN = 40;
 let PU_STRICT_INPUT = 1;
 let LAST_SYNC_NOTE = "";
 let PUSH_TIMER = null;
+let PREV_ENSO_DONE = null;
+let EXPANDED_LEDGER_DATE = null;
+
+// Chart interactive scrubbing state
+let CHART_PTS = [];
+let CHART_SCRUB_IDX = -1;
+
+// Zero-keyboard dial state
+let DIAL_WT = 81.5;
+let DIAL_BF = 18.0;
+let DIAL_SKIP_BF = false;
+let DIAL_WT_OFFSET = 0;
+let DIAL_BF_OFFSET = 0;
+
+// Pull-up 4-second eccentric pacer state
+let PACER_ACTIVE = false;
+let PACER_RAF = null;
+let PACER_SOUND = false;
+let PACER_WAKE_LOCK = null;
+let AUDIO_CTX = null;
 
 function loadLocalState() {
   try {
@@ -1245,7 +1665,6 @@ function compactStateForTransport(st) {
 async function pullFromCloud(silent = true) {
   if (!VAULT || !CRYPTO_KEY) return false;
   let mergedCount = 0;
-  // 1. Always merge permanent encrypted vault snapshot (immune to 12h relay TTL on new devices)
   try {
     const vRes = await fetch(`./vault.enc?t=${Date.now()}`, { cache: "no-store" });
     if (vRes.ok) {
@@ -1258,7 +1677,6 @@ async function pullFromCloud(silent = true) {
     }
   } catch (e) {}
 
-  // 2. Pull live encrypted relay updates (phone <-> desktop <-> cloud)
   try {
     const url = `https://ntfy.sh/${encodeURIComponent(VAULT.t)}/json?poll=1&since=all`;
     const res = await fetch(url, { cache: "no-store" });
@@ -1290,6 +1708,7 @@ async function pullFromCloud(silent = true) {
     if (mergedCount > 0) saveLocalState();
     LAST_SYNC_NOTE = "离线模式 · 联网后自动同步";
     renderAll();
+    if (!silent) showToast("当前离线，已保留本地记录");
     return false;
   }
 }
@@ -1298,23 +1717,22 @@ async function pushToCloudNow() {
   if (!VAULT || !CRYPTO_KEY) return;
   try {
     const payload = compactStateForTransport(STATE);
-    const enc = await encryptPayload(payload);
+    let enc = await encryptPayload(payload);
     if (enc.length > 3850) {
-      // Trim older days slightly if ever near ntfy limit
       payload.wb = payload.wb.slice(-24);
       payload.acts = payload.acts.slice(-12);
+      enc = await encryptPayload(payload);
     }
-    const finalEnc = await encryptPayload(payload);
     const res = await fetch(`https://ntfy.sh/${encodeURIComponent(VAULT.t)}`, {
       method: "POST",
-      body: finalEnc
+      body: enc
     });
     if (res.ok) {
       try { localStorage.removeItem(PENDING_PUSH_KEY); } catch (e) {}
       const pt = getPTNow();
       LAST_SYNC_NOTE = `已加密同步 · ${String(pt.hour).padStart(2, "0")}:${String(pt.minute).padStart(2, "0")}`;
       const el = document.getElementById("sync-status-txt");
-      if (el) el.textContent = LAST_SYNC_NOTE;
+      if (el) el.textContent = [STATE.vitals && STATE.vitals.last_drive_sync ? `云盘同步 ${STATE.vitals.last_drive_sync}` : "", LAST_SYNC_NOTE].filter(Boolean).join(" · ");
     } else {
       try { localStorage.setItem(PENDING_PUSH_KEY, "1"); } catch (e) {}
     }
@@ -1344,7 +1762,6 @@ function getBasketballForDate(ymd) {
   const day = getDayEntry(ymd);
   const driveBB = getDriveActsForDate(ymd).filter(a => a[1] === "bb");
   if (driveBB.length > 0) {
-    // Combine if multiple sessions same day
     const dur = driveBB.reduce((s, r) => s + (r[2] || 0), 0);
     const kcal = driveBB.reduce((s, r) => s + (r[3] || 0), 0);
     const avgHr = Math.max(...driveBB.map(r => r[4] || 0));
@@ -1409,7 +1826,6 @@ function computeDynamicPlan(todayYmd) {
   const rhr = (STATE.vitals && STATE.vitals.rhr) || 40;
   const rhrHigh = rhr >= 46;
 
-  // 1. Travel Mode (e.g. Europe trip)
   if (trip) {
     return {
       tier: "cap",
@@ -1424,7 +1840,6 @@ function computeDynamicPlan(todayYmd) {
     };
   }
 
-  // 2. RED: High-Intensity Basketball Today -> Cancel Hard Peloton!
   if (bbToday && bbToday.level === "high") {
     const statBits = [];
     if (bbToday.dur) statBits.push(`${bbToday.dur} 分钟`);
@@ -1439,14 +1854,13 @@ function computeDynamicPlan(todayYmd) {
       eyebrow: "今日心肺已达标",
       title: "今晚休息，或 15 分钟极轻排酸骑",
       sub: detail,
-      cardioDone: true, // Basketball already satisfies Circle 1!
-      puTargetRounds: 1, // Softened to 1 round if forearms tired
+      cardioDone: true,
+      puTargetRounds: 1,
       defaultPeloMin: 15,
       bbToday, peloToday, week, isTravel: false
     };
   }
 
-  // 3. CAP: Weekly Hard Cardio >= 5 sessions
   const hardExcludingToday = week.totalHardCardio - (peloToday && peloToday.status === "done" ? 1 : 0);
   if (hardExcludingToday >= 5) {
     return {
@@ -1462,7 +1876,6 @@ function computeDynamicPlan(todayYmd) {
     };
   }
 
-  // 4. YELLOW: Light Basketball Today, OR Back-to-Back Hard Basketball Days, OR Yesterday Hard Basketball + High RHR
   const backToBackHard = (bbYest && bbYest.level === "high") && (bbTwoDays && bbTwoDays.level === "high");
   const yestHardAndTired = (bbYest && bbYest.level === "high") && rhrHigh;
   if ((bbToday && bbToday.level === "light") || backToBackHard || yestHardAndTired) {
@@ -1482,7 +1895,6 @@ function computeDynamicPlan(todayYmd) {
     };
   }
 
-  // 5. GREEN: Fresh Day -> Zone 2 Fat-Burn Peloton
   const yestNote = (bbYest && bbYest.level === "high")
     ? "昨天打完球但静息心率恢复良好，今晚稳踩低心率 Zone 2 既燃脂又促恢复。"
     : "低心率 Zone 2 稳态有氧，最稳烧脂肪且不引发暴食，刚好配一集日剧或一期《锵锵三人行》。";
@@ -1545,6 +1957,28 @@ function getPullupStage() {
   };
 }
 
+function getPullupCooldownNote(day, puTarget) {
+  const rounds = (day && day.pu) || [];
+  if (rounds.length === 1 && puTarget >= 2) {
+    const ts1 = rounds[0] && rounds[0][2];
+    if (ts1) {
+      const t1Str = formatEpochPT(ts1);
+      const readyTs = ts1 + 7200;
+      const readyStr = formatEpochPT(readyTs);
+      const nowSec = Math.floor(Date.now() / 1000);
+      return nowSec < readyTs
+        ? `第 1 轮 ${t1Str} 已拉 · ${readyStr} 后可拉第 2 轮`
+        : `第 1 轮 ${t1Str} 已拉 · 现在可拉第 2 轮`;
+    }
+    return "第 1 轮已完成 · 间隔 2 小时后再拉第 2 轮";
+  }
+  if (rounds.length >= 2) {
+    const ts2 = rounds[1] && rounds[1][2];
+    return ts2 ? `今日 2 轮已于 ${formatEpochPT(ts2)} 满额收工` : "今日 2 轮已满额收工";
+  }
+  return "";
+}
+
 function syncPullupInputDefault() {
   PU_STRICT_INPUT = getPullupStage().defaultStrict;
 }
@@ -1553,19 +1987,19 @@ function syncPullupInputDefault() {
 function renderEnsoSVG(ratio, isDone) {
   if (isDone) {
     return `<svg class="enso-svg" viewBox="0 0 28 28" aria-hidden="true">
-      <circle cx="14" cy="14" r="10.2" fill="#2D7A56"/>
-      <path d="M 9.6 14.3 L 12.6 17.2 L 18.7 10.9" fill="none" stroke="#FCFBF8" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle class="enso-fill" cx="14" cy="14" r="10.2" fill="var(--moss-solid)"/>
+      <path class="enso-check" d="M 9.6 14.3 L 12.6 17.2 L 18.7 10.9" fill="none" stroke="#FCFBF8" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>`;
   }
   if (ratio > 0.01) {
     const pct = Math.max(10, Math.min(95, Math.round(ratio * 100)));
     return `<svg class="enso-svg" viewBox="0 0 28 28" aria-hidden="true">
-      <circle cx="14" cy="14" r="9.8" fill="none" stroke="rgba(28, 27, 24, 0.13)" stroke-width="1.85"/>
-      <circle cx="14" cy="14" r="9.8" pathLength="100" fill="none" stroke="#2D7A56" stroke-width="2.3" stroke-linecap="round" stroke-dasharray="${pct} 100" transform="rotate(-90 14 14)"/>
+      <circle cx="14" cy="14" r="9.8" fill="none" stroke="var(--hairline-strong)" stroke-width="1.8"/>
+      <circle cx="14" cy="14" r="9.8" pathLength="100" fill="none" stroke="var(--moss-solid)" stroke-width="2.3" stroke-linecap="round" stroke-dasharray="${pct} 100" transform="rotate(-90 14 14)"/>
     </svg>`;
   }
   return `<svg class="enso-svg" viewBox="0 0 28 28" aria-hidden="true">
-    <circle cx="14" cy="14" r="9.8" fill="none" stroke="rgba(28, 27, 24, 0.16)" stroke-width="1.75" stroke-dasharray="54 7" stroke-linecap="round" transform="rotate(-40 14 14)"/>
+    <circle cx="14" cy="14" r="9.8" fill="none" stroke="var(--hairline-strong)" stroke-width="1.75" stroke-dasharray="54 7" stroke-linecap="round" transform="rotate(-40 14 14)"/>
   </svg>`;
 }
 
@@ -1579,7 +2013,6 @@ function getLatestBodyMetrics() {
       if (!bestBf || r[2] < bestBf.val) bestBf = { date: r[0], val: r[2], wt: r[1] };
     }
   }
-  // 7-day smoothed weight (last 3 weigh-ins within 14d if sparse)
   const validWts = wb.filter(r => r[1]).slice(-5);
   const avgWt = validWts.length ? +(validWts.reduce((s, r) => s + r[1], 0) / validWts.length).toFixed(1) : null;
   return { latestWt, latestBf, bestBf, avgWt };
@@ -1596,19 +2029,20 @@ function renderAll() {
   const dietDone = !!day.diet;
   const body = getLatestBodyMetrics();
 
-  // Desktop date
   document.getElementById("desk-date").textContent = formatCnDate(today);
 
-  // Top Enso Trio
+  // Top Enso Trio (animate only circles newly transitioned to done)
   const ensoTrio = document.getElementById("enso-trio");
   const circles = [
     { done: plan.cardioDone, ratio: plan.cardioDone ? 1 : 0, title: "心肺" },
     { done: puDone, ratio: puRatio, title: "引体" },
     { done: dietDone, ratio: dietDone ? 1 : 0, title: "节律" }
   ];
-  ensoTrio.innerHTML = circles.map(c =>
-    `<span class="enso-item ${c.done ? "is-done" : ""}" title="${c.title}">${renderEnsoSVG(c.ratio, c.done)}</span>`
-  ).join("");
+  ensoTrio.innerHTML = circles.map((c, idx) => {
+    const justDone = PREV_ENSO_DONE !== null && c.done && !PREV_ENSO_DONE[idx];
+    return `<span class="enso-item ${c.done ? "is-done" : ""} ${justDone ? "just-done" : ""}" title="${c.title}">${renderEnsoSVG(c.ratio, c.done)}</span>`;
+  }).join("");
+  PREV_ENSO_DONE = circles.map(c => c.done);
 
   // Top Right Quiet Target Readout
   const bfStr = body.latestBf ? `${body.latestBf.val.toFixed(1)}%` : "--%";
@@ -1632,7 +2066,6 @@ function renderToday(today, plan, day, puRounds, puTarget, puDone, dietDone) {
   document.getElementById("today-title").textContent = plan.title;
   document.getElementById("today-sub").textContent = plan.sub;
 
-  // Primary Actions inside focal card
   const actBox = document.getElementById("today-actions");
   if (plan.isTravel) {
     actBox.innerHTML = `<button class="btn-primary ${plan.cardioDone ? "is-done" : ""}" onclick="markPeloton('rest')">${plan.cardioDone ? "今日旅途已打卡" : "记今日步行维持"}</button>`;
@@ -1662,29 +2095,34 @@ function renderToday(today, plan, day, puRounds, puTarget, puDone, dietDone) {
     `;
   }
 
-  // Quick live basketball overrides (right-aligned frameless)
+  // Quiet strip below focal card: Left -> 锵锵 radio bridge, Right -> quick basketball overrides
   const bb = plan.bbToday;
   const ovBox = document.getElementById("today-overrides");
+  const radioLink = `<a class="radio-bridge" href="https://tango13ucla.github.io/n3-audio-tutor/?mode=radio" target="_blank" rel="noopener">听《锵锵》↗</a>`;
   if (!plan.isTravel) {
     const fromDrive = bb && bb.src === "drive";
     ovBox.innerHTML = fromDrive
-      ? `<span style="font-size:12.5px; color:var(--ink-3);">已从云盘自动识别今日篮球</span>`
+      ? `${radioLink}<span style="font-size:12.5px; color:var(--ink-3);">已自动同步今日篮球</span>`
       : `
+        ${radioLink}
         <button class="btn-quiet ${bb && bb.level === "high" ? "is-active" : ""}" onclick="toggleBasketball('high')">${bb && bb.level === "high" ? "取消高强度篮球" : "刚打完高强度篮球"}</button>
-        <button class="btn-quiet ${bb && bb.level === "light" ? "is-active-moss" : ""}" onclick="toggleBasketball('light')">${bb && bb.level === "light" ? "取消轻投篮" : "今天轻投篮"}</button>
+        <button class="btn-quiet ${bb && bb.level === "light" ? "is-active-moss" : ""}" onclick="toggleBasketball('light')">${bb && bb.level === "light" ? "取消轻投篮" : "轻投篮"}</button>
       `;
   } else {
-    ovBox.innerHTML = "";
+    ovBox.innerHTML = radioLink;
   }
 
-  // Quick Home Pull-Up Row
+  // Quick Home Pull-Up Row (with 2-hour cooldown guidance)
   const stg = getPullupStage();
+  const cdNote = getPullupCooldownNote(day, puTarget);
   document.getElementById("today-pu-name").textContent = "家里引体向上";
   document.getElementById("today-pu-hint").textContent = plan.isTravel
     ? "旅途中暂休，回家接着拉"
-    : (plan.tier === "red"
-        ? `打球日前臂易累 · 今天 1 轮即达标（每轮 ${stg.defaultStrict} 严格${stg.negReps ? ` + ${stg.negReps} 慢放` : ""}）`
-        : `今天 ${puTarget} 轮封顶 · 每轮 ${stg.defaultStrict} 严格${stg.negReps ? ` + ${stg.negReps} 慢放` : ""}`);
+    : (cdNote
+        ? cdNote
+        : (plan.tier === "red"
+            ? `打球日前臂易累 · 今天 1 轮即达标（每轮 ${stg.defaultStrict} 严格${stg.negReps ? ` + ${stg.negReps} 慢放` : ""}）`
+            : `今天 ${puTarget} 轮封顶 · 每轮 ${stg.defaultStrict} 严格${stg.negReps ? ` + ${stg.negReps} 慢放` : ""}`));
 
   const puBtns = document.getElementById("today-pu-btns");
   if (plan.isTravel) {
@@ -1707,9 +2145,11 @@ function renderToday(today, plan, day, puRounds, puTarget, puDone, dietDone) {
 
 function renderPullup(today, plan, day, puRounds, puTarget) {
   const stg = getPullupStage();
-  const rounds = day.pu || [];
+  const cdNote = getPullupCooldownNote(day, puTarget || 2);
   document.getElementById("pu-pr-label").textContent = `当前最好 ${STATE.pu_best || 1} 个 · 目标 5 个`;
-  document.getElementById("pu-stage-eyebrow").textContent = `${stg.code} · 今日已完成 ${puRounds} / ${puTarget || 2} 轮`;
+  document.getElementById("pu-stage-eyebrow").textContent = cdNote
+    ? `${stg.code} · ${cdNote}`
+    : `${stg.code} · 今日已完成 ${puRounds} / ${puTarget || 2} 轮`;
   document.getElementById("pu-stage-title").textContent = stg.title;
   document.getElementById("pu-stage-sub").textContent = stg.sub;
 
@@ -1731,8 +2171,10 @@ function renderPullup(today, plan, day, puRounds, puTarget) {
     logBtn.className = "btn-primary";
   }
   document.getElementById("pu-undo-btn").style.display = puRounds > 0 ? "inline-block" : "none";
+  const pacerBtn = document.getElementById("pu-pacer-btn");
+  pacerBtn.textContent = PACER_ACTIVE ? "节拍进行中" : "4 秒慢放节拍";
+  pacerBtn.className = `btn-quiet ${PACER_ACTIVE ? "is-active-moss" : ""}`;
 
-  // 4-Stage Ladder
   const stages = ["1 严格+慢放", "2 连拉", "3 至 4 连", "轻松 5 连"];
   document.getElementById("pu-ladder").innerHTML = stages.map((lbl, i) => {
     const cls = i < stg.idx ? "past" : (i === stg.idx ? "now" : "");
@@ -1740,15 +2182,35 @@ function renderPullup(today, plan, day, puRounds, puTarget) {
   }).join("");
 }
 
-function renderBody(today, body) {
+function applyBodyHeadline(today, body, scrubPt) {
   const targetBf = (STATE.targets && STATE.targets.bf_ge) || 14.0;
   const deadline = (STATE.targets && STATE.targets.deadline) || "2027-12-31";
+  const bfBigEl = document.getElementById("body-bf-big");
+  const wtBigEl = document.getElementById("body-wt-big");
+  const ctxLeft = document.getElementById("body-context-left");
+
+  if (scrubPt) {
+    bfBigEl.classList.add("scrubbing");
+    wtBigEl.classList.add("scrubbing");
+    ctxLeft.textContent = `查看 ${scrubPt.d} 实测`;
+    bfBigEl.innerHTML = `${scrubPt.bf !== null ? scrubPt.bf.toFixed(1) : "--"}<span class="stat-unit">%</span>`;
+    wtBigEl.innerHTML = `${scrubPt.wt !== null ? scrubPt.wt.toFixed(1) : "--"}<span class="stat-unit">kg</span>`;
+    const avgTxt = scrubPt.ma !== null ? `7 日均值 ${scrubPt.ma.toFixed(1)}${CHART_METRIC === "bf" ? "%" : " kg"}` : "";
+    document.getElementById("body-bf-sub").textContent = `${formatCnDate(scrubPt.d)}`;
+    document.getElementById("body-wt-sub").textContent = avgTxt || "手指松开恢复最新";
+    return;
+  }
+
+  bfBigEl.classList.remove("scrubbing");
+  wtBigEl.classList.remove("scrubbing");
+  ctxLeft.textContent = "GE 智能秤趋势";
+
   const curBf = body.latestBf ? body.latestBf.val : null;
   const curWt = body.latestWt ? body.latestWt.val : null;
   const estTargetWt = (curWt && curBf) ? +((curWt * (1 - curBf / 100)) / (1 - targetBf / 100)).toFixed(1) : 77.5;
 
-  document.getElementById("body-bf-big").innerHTML = `${curBf !== null ? curBf.toFixed(1) : "--"}<span class="stat-unit">%</span>`;
-  document.getElementById("body-wt-big").innerHTML = `${curWt !== null ? curWt.toFixed(1) : "--"}<span class="stat-unit">kg</span>`;
+  bfBigEl.innerHTML = `${curBf !== null ? curBf.toFixed(1) : "--"}<span class="stat-unit">%</span>`;
+  wtBigEl.innerHTML = `${curWt !== null ? curWt.toFixed(1) : "--"}<span class="stat-unit">kg</span>`;
 
   if (curBf !== null) {
     const diff = +(curBf - targetBf).toFixed(1);
@@ -1756,7 +2218,7 @@ function renderBody(today, body) {
     const perMonth = (Math.max(0, diff) / monthsLeft).toFixed(2);
     document.getElementById("body-pace-label").textContent = diff > 0 ? `距 ${targetBf}% 剩 ${diff}% · 均月 ${perMonth}%` : `已达 ${targetBf}% 目标`;
     document.getElementById("body-bf-sub").textContent = body.bestBf
-      ? `两年最佳 ${body.bestBf.val.toFixed(1)}% (${body.bestBf.date.slice(2, 7)})`
+      ? `两年最低 ${body.bestBf.val.toFixed(1)}%`
       : `目标 ${targetBf}%`;
   } else {
     document.getElementById("body-pace-label").textContent = `目标 ${targetBf}%`;
@@ -1764,40 +2226,65 @@ function renderBody(today, body) {
   }
 
   document.getElementById("body-wt-sub").textContent = body.avgWt
-    ? `近期均值 ${body.avgWt} kg · 估标 ~${estTargetWt} kg`
+    ? `均 ${body.avgWt} · 估标 ${estTargetWt} kg`
     : "7 日平滑均值";
+}
 
-  // Switch active states
+function renderBody(today, body) {
+  const targetBf = (STATE.targets && STATE.targets.bf_ge) || 14.0;
+  const curBf = body.latestBf ? body.latestBf.val : null;
+  const curWt = body.latestWt ? body.latestWt.val : null;
+  const estTargetWt = (curWt && curBf) ? +((curWt * (1 - curBf / 100)) / (1 - targetBf / 100)).toFixed(1) : 77.5;
+
+  CHART_SCRUB_IDX = -1;
+  applyBodyHeadline(today, body, null);
+
   document.getElementById("btn-metric-bf").className = `btn-quiet ${CHART_METRIC === "bf" ? "is-active-moss" : ""}`;
   document.getElementById("btn-metric-wt").className = `btn-quiet ${CHART_METRIC === "wt" ? "is-active-moss" : ""}`;
   document.getElementById("btn-range-90").className = `btn-quiet ${CHART_RANGE === "90" ? "is-active-moss" : ""}`;
   document.getElementById("btn-range-all").className = `btn-quiet ${CHART_RANGE === "all" ? "is-active-moss" : ""}`;
 
-  // Gentle weigh-in reminder if stale > 5 days
   const lastDate = (body.latestBf && body.latestBf.date) || (body.latestWt && body.latestWt.date) || "";
   if (lastDate) {
     const gapDays = Math.round((new Date(today) - new Date(lastDate)) / 86400000);
     document.getElementById("body-reminder").textContent = gapDays >= 5
-      ? `上次 GE 体脂 ${lastDate.slice(5)} · 记得光脚开 Fit Profile 称一次`
+      ? `上次 GE 体脂 ${lastDate.slice(5)} · 记得光脚称一次`
       : `最近称重 ${lastDate.slice(5)}`;
   } else {
     document.getElementById("body-reminder").textContent = "";
   }
 
-  // Render Minimalist SVG Line Chart
   const cutoff = CHART_RANGE === "90" ? shiftDate(today, -95) : "2020-01-01";
   const rawPts = (STATE.wb || [])
     .filter(r => r[0] >= cutoff)
-    .map(r => ({ d: r[0], v: CHART_METRIC === "bf" ? r[2] : r[1] }))
+    .map(r => ({
+      d: r[0],
+      wt: r[1] || null,
+      bf: (r[2] && r[2] > 5) ? r[2] : null,
+      v: CHART_METRIC === "bf" ? r[2] : r[1]
+    }))
     .filter(p => p.v && p.v > 5);
 
   const wrap = document.getElementById("body-chart-wrap");
   if (rawPts.length < 2) {
-    wrap.innerHTML = `<div style="height:140px; display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--ink-3);">再记一次称重即显示曲线</div>`;
+    CHART_PTS = [];
+    wrap.innerHTML = `<div style="height:146px; display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--ink-3);">再记一次称重即显示曲线</div>`;
     return;
   }
 
-  const W = 400, H = 148, padL = 6, padR = 36, padT = 14, padB = 22;
+  // Compute 7-day / 3-point smoothed moving average
+  for (let i = 0; i < rawPts.length; i++) {
+    const ti = new Date(rawPts[i].d).getTime();
+    const win = [];
+    for (let j = i; j >= 0; j--) {
+      const dtDays = (ti - new Date(rawPts[j].d).getTime()) / 86400000;
+      if (dtDays <= 14 || win.length < 2) win.push(rawPts[j].v);
+      if (win.length >= 4) break;
+    }
+    rawPts[i].ma = +(win.reduce((a, b) => a + b, 0) / win.length).toFixed(2);
+  }
+
+  const W = 360, H = 156, padL = 6, padR = 38, padT = 16, padB = 22;
   const vals = rawPts.map(p => p.v);
   const goalVal = CHART_METRIC === "bf" ? targetBf : estTargetWt;
   const minV = Math.min(...vals, goalVal) - (CHART_METRIC === "bf" ? 0.8 : 1.0);
@@ -1811,23 +2298,31 @@ function renderBody(today, body) {
   const xy = rawPts.map(p => {
     const x = padL + ((new Date(p.d).getTime() - t0) / spanT) * (W - padL - padR);
     const y = padT + (1 - (p.v - minV) / spanV) * (H - padT - padB);
-    return { x: +x.toFixed(1), y: +y.toFixed(1), d: p.d, v: p.v };
+    const yMa = padT + (1 - (p.ma - minV) / spanV) * (H - padT - padB);
+    return { x: +x.toFixed(1), y: +y.toFixed(1), yMa: +yMa.toFixed(1), d: p.d, v: p.v, wt: p.wt, bf: p.bf, ma: p.ma };
   });
+  CHART_PTS = xy;
 
   const goalY = +(padT + (1 - (goalVal - minV) / spanV) * (H - padT - padB)).toFixed(1);
   const pathD = xy.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+  const maD = xy.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.yMa}`).join(" ");
   const last = xy[xy.length - 1];
   const first = xy[0];
 
   wrap.innerHTML = `
-    <svg class="chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-      <line x1="${padL}" y1="${goalY}" x2="${W - padR}" y2="${goalY}" stroke="#2B5F49" stroke-opacity="0.45" stroke-width="1" stroke-dasharray="3 4"/>
-      <text x="${W - padR + 5}" y="${goalY + 3.5}" fill="#2B5F49" font-size="10.5" font-family="sans-serif">${goalVal}${CHART_METRIC === "bf" ? "%" : ""}</text>
-      <path d="${pathD}" fill="none" stroke="#1C1B18" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      ${xy.map(p => `<circle cx="${p.x}" cy="${p.y}" r="2.2" fill="#FCFBF8" stroke="#1C1B18" stroke-width="1.3"/>`).join("")}
-      <circle cx="${last.x}" cy="${last.y}" r="3.6" fill="#2B5F49"/>
-      <text x="${padL}" y="${H - 4}" fill="#847E72" font-size="10.5" font-family="sans-serif">${first.d.slice(2, 10)}</text>
-      <text x="${W - padR}" y="${H - 4}" text-anchor="end" fill="#847E72" font-size="10.5" font-family="sans-serif">${last.d.slice(2, 10)}</text>
+    <svg class="chart-svg" id="body-chart-svg" viewBox="0 0 ${W} ${H}">
+      <line x1="${padL}" y1="${goalY}" x2="${W - padR}" y2="${goalY}" stroke="var(--moss)" stroke-opacity="0.42" stroke-width="1" stroke-dasharray="3 4"/>
+      <text x="${W - padR + 5}" y="${goalY + 3.5}" fill="var(--moss)" font-size="10.5" font-family="sans-serif">${goalVal}${CHART_METRIC === "bf" ? "%" : ""}</text>
+      <path d="${maD}" fill="none" stroke="var(--moss)" stroke-opacity="0.45" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="${pathD}" fill="none" stroke="var(--sumi)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+      ${xy.map(p => `<circle cx="${p.x}" cy="${p.y}" r="2.2" fill="var(--sheet)" stroke="var(--sumi)" stroke-width="1.25"/>`).join("")}
+      <circle cx="${last.x}" cy="${last.y}" r="3.6" fill="var(--moss)"/>
+      <line id="chart-cursor" x1="0" y1="${padT - 4}" x2="0" y2="${H - padB + 2}" stroke="var(--moss)" stroke-opacity="0.55" stroke-width="1" stroke-dasharray="2 3" style="display:none;"/>
+      <circle id="chart-halo" cx="0" cy="0" r="6" fill="var(--moss)" fill-opacity="0.18" style="display:none;"/>
+      <circle id="chart-focus" cx="0" cy="0" r="3.6" fill="var(--moss)" stroke="var(--sheet)" stroke-width="1.5" style="display:none;"/>
+      <text x="${padL}" y="${H - 4}" fill="var(--ink-3)" font-size="10.5" font-family="sans-serif">${first.d.slice(2, 10)}</text>
+      <text x="${(W - padR + padL) / 2}" y="${H - 4}" text-anchor="middle" fill="var(--ink-3)" font-size="10" font-family="sans-serif" opacity="0.78">按住曲线左右划查看 · 淡绿为平滑走势</text>
+      <text x="${W - padR}" y="${H - 4}" text-anchor="end" fill="var(--ink-3)" font-size="10.5" font-family="sans-serif">${last.d.slice(2, 10)}</text>
     </svg>
   `;
 }
@@ -1850,7 +2345,6 @@ function renderLedger(today, plan, body) {
     </div>
   `;
 
-  // Last 10 days clean ledger
   let rowsHtml = "";
   for (let i = 0; i < 10; i++) {
     const d = shiftDate(today, -i);
@@ -1868,41 +2362,625 @@ function renderLedger(today, plan, body) {
     const actTxt = parts.length ? parts.join(" · ") : "未记心肺";
     const puTxt = puCnt ? `引体 ${puCnt}轮` : "·";
     const doneAll = (!!bb || !!pelo) && puCnt >= 1 && !!de.diet;
+    const isExp = EXPANDED_LEDGER_DATE === d;
+
+    let editorHtml = "";
+    if (isExp) {
+      const bbDriveLocked = bb && bb.src === "drive";
+      editorHtml = `
+        <div class="ledger-editor" data-no-swipe="1">
+          <div class="ed-row">
+            <span class="ed-lbl">心肺</span>
+            <button class="ed-chip ${de.pelo === "done" ? "on" : ""}" onclick="editLedgerCardio('${d}','pelo','done')">Peloton</button>
+            <button class="ed-chip ${de.pelo === "recovery" ? "on" : ""}" onclick="editLedgerCardio('${d}','pelo','recovery')">恢复骑</button>
+            <button class="ed-chip ${de.pelo === "rest" ? "on" : ""}" onclick="editLedgerCardio('${d}','pelo','rest')">休整</button>
+            ${bbDriveLocked
+              ? `<span style="font-size:12px; color:var(--ink-3);">云盘已记篮球</span>`
+              : `<button class="ed-chip ${de.bb === "high" ? "on-red" : ""}" onclick="editLedgerCardio('${d}','bb','high')">篮球</button>
+                 <button class="ed-chip ${de.bb === "light" ? "on" : ""}" onclick="editLedgerCardio('${d}','bb','light')">轻投</button>`}
+            ${(de.pelo || de.bb) ? `<button class="ed-chip" style="color:var(--ink-3);" onclick="editLedgerCardio('${d}','clear','')">清空</button>` : ""}
+          </div>
+          <div class="ed-row">
+            <span class="ed-lbl">引体</span>
+            <button class="ed-chip ${puCnt === 0 ? "on" : ""}" onclick="editLedgerPullup('${d}',0)">0 轮</button>
+            <button class="ed-chip ${puCnt === 1 ? "on" : ""}" onclick="editLedgerPullup('${d}',1)">1 轮</button>
+            <button class="ed-chip ${puCnt >= 2 ? "on" : ""}" onclick="editLedgerPullup('${d}',2)">2 轮</button>
+            <span style="margin-left:auto;"></span>
+            <button class="ed-chip ${de.diet ? "on" : ""}" onclick="editLedgerDiet('${d}')">${de.diet ? "饮食达标 ✓" : "补记饮食达标"}</button>
+          </div>
+        </div>
+      `;
+    }
+
     rowsHtml += `
-      <div class="day-row">
-        <span class="day-dt">${d.slice(5)}</span>
-        <span class="day-act" style="${parts.length ? "" : "color:var(--ink-3);"}">${actTxt}</span>
-        <span class="day-pu">${puTxt}</span>
-        <span class="day-dot ${doneAll ? "" : "muted"}">${doneAll ? "✓" : (de.diet ? "·" : "")}</span>
+      <div class="day-item">
+        <button class="day-row" onclick="toggleLedgerDay('${d}')">
+          <span class="day-dt">${d.slice(5)}</span>
+          <span class="day-act" style="${parts.length ? "" : "color:var(--ink-3);"}">${actTxt}</span>
+          <span class="day-pu">${puTxt}</span>
+          <span class="day-dot ${doneAll ? "" : "muted"}">${doneAll ? "✓" : (de.diet ? "·" : "")}</span>
+        </button>
+        ${editorHtml}
       </div>
     `;
   }
   document.getElementById("ledger-rows").innerHTML = rowsHtml;
 
-  // Gaps & Sync info
   const gaps = (vit.gaps || []);
   document.getElementById("sync-gaps").innerHTML = gaps.length
     ? gaps.map(g => `<div>待补通：${g}</div>`).join("")
-    : `<div>云盘数据通路全部正常</div>`;
+    : `<div>云盘数据通路全部正常 · 轻点任意日期可补记</div>`;
   const driveSync = vit.last_drive_sync ? `云盘同步 ${vit.last_drive_sync}` : "";
   document.getElementById("sync-status-txt").textContent = [driveSync, LAST_SYNC_NOTE].filter(Boolean).join(" · ") || "已就绪";
 }
 
-/* ===================== 7. INTERACTIONS ===================== */
-function switchTab(tab) {
-  CURRENT_TAB = tab;
-  document.querySelectorAll(".view-panel").forEach(el => el.classList.toggle("active", el.id === `view-${tab}`));
-  document.querySelectorAll("[data-tab]").forEach(el => el.classList.toggle("active", el.getAttribute("data-tab") === tab));
-  if (tab === "pullup") syncPullupInputDefault();
-  renderAll();
+/* ===================== 7. SLIDING NAV INDICATOR & SILKY GESTURES ===================== */
+function positionNavBars(immediate = false) {
+  const configs = [
+    { wrapId: "thumb-tabs", barId: "thumb-ink-bar", sel: `.thumb-link[data-tab="${CURRENT_TAB}"]`, inset: 15 },
+    { wrapId: "desk-nav", barId: "desk-ink-bar", sel: `.nav-link[data-tab="${CURRENT_TAB}"]`, inset: 0 }
+  ];
+  for (const cfg of configs) {
+    const wrap = document.getElementById(cfg.wrapId);
+    const bar = document.getElementById(cfg.barId);
+    if (!wrap || !bar) continue;
+    const btn = wrap.querySelector(cfg.sel);
+    if (!btn || wrap.offsetWidth === 0) continue;
+    const left = btn.offsetLeft + cfg.inset;
+    const width = Math.max(18, btn.offsetWidth - cfg.inset * 2);
+    if (immediate) bar.style.transition = "none";
+    bar.style.width = width + "px";
+    bar.style.transform = `translateX(${left}px)`;
+    if (immediate) {
+      bar.offsetWidth; // force reflow
+      bar.style.transition = "";
+    }
+  }
 }
 
-function ensureTodayDay() {
+function switchTab(tab, directionHint = 0) {
+  if (!TAB_ORDER.includes(tab)) return;
+  if (tab === CURRENT_TAB) {
+    positionNavBars(false);
+    return;
+  }
+  if (PACER_ACTIVE) stopPacer(false);
+
+  const prevIdx = TAB_ORDER.indexOf(CURRENT_TAB);
+  const nextIdx = TAB_ORDER.indexOf(tab);
+  const dir = directionHint !== 0 ? directionHint : (nextIdx > prevIdx ? 1 : -1);
+  CURRENT_TAB = tab;
+
+  document.querySelectorAll(".view-panel").forEach(el => {
+    const isActive = el.id === `view-${tab}`;
+    el.classList.remove("slide-from-right", "slide-from-left");
+    el.style.transform = "";
+    el.style.transition = "";
+    el.classList.toggle("active", isActive);
+    if (isActive) {
+      void el.offsetWidth;
+      el.classList.add(dir > 0 ? "slide-from-right" : "slide-from-left");
+    }
+  });
+  document.querySelectorAll("[data-tab]").forEach(el => el.classList.toggle("active", el.getAttribute("data-tab") === tab));
+
+  const stage = document.getElementById("zen-stage");
+  if (stage) stage.scrollTop = 0;
+
+  if (tab === "pullup") syncPullupInputDefault();
+  renderAll();
+  positionNavBars(false);
+}
+
+// One-Thumb Horizontal Swipe & Pull-to-Refresh on Stage
+(function bindStageGestures() {
+  const stage = document.getElementById("zen-stage");
+  const ptrWrap = document.getElementById("ptr-wrap");
+  const ptrArc = document.getElementById("ptr-arc");
+  const ptrLbl = document.getElementById("ptr-lbl");
+  if (!stage) return;
+
+  let tracking = false;
+  let mode = ""; // "h" | "ptr" | "v"
+  let sx = 0, sy = 0, t0 = 0;
+  let lastDx = 0, lastDy = 0;
+  let ptrBusy = false;
+
+  function toLocalDelta(rawDx, rawDy) {
+    if (FP_ANGLE === 90) return { dx: -rawDy, dy: rawDx };
+    if (FP_ANGLE === 270) return { dx: rawDy, dy: -rawDx };
+    return { dx: rawDx, dy: rawDy };
+  }
+
+  stage.addEventListener("touchstart", (e) => {
+    if (e.touches.length !== 1 || ptrBusy) return;
+    if (e.target.closest("[data-no-swipe], input, textarea")) return;
+    const t = e.touches[0];
+    tracking = true;
+    mode = "";
+    sx = t.clientX;
+    sy = t.clientY;
+    t0 = Date.now();
+    lastDx = 0;
+    lastDy = 0;
+  }, { passive: true });
+
+  stage.addEventListener("touchmove", (e) => {
+    if (!tracking || e.touches.length !== 1) return;
+    const t = e.touches[0];
+    const { dx, dy } = toLocalDelta(t.clientX - sx, t.clientY - sy);
+    lastDx = dx;
+    lastDy = dy;
+
+    if (!mode) {
+      if (Math.hypot(dx, dy) < 10) return;
+      if (Math.abs(dx) > Math.abs(dy) * 1.25) {
+        mode = "h";
+      } else if (dy > 0 && stage.scrollTop <= 0) {
+        mode = "ptr";
+        ptrWrap.classList.add("dragging");
+      } else {
+        mode = "v";
+        return;
+      }
+    }
+
+    if (mode === "h") {
+      e.preventDefault();
+      const idx = TAB_ORDER.indexOf(CURRENT_TAB);
+      const atEdge = (idx === 0 && dx > 0) || (idx === TAB_ORDER.length - 1 && dx < 0);
+      const damped = atEdge ? dx * 0.16 : Math.max(-72, Math.min(72, dx * 0.42));
+      const activePanel = document.querySelector(".view-panel.active");
+      if (activePanel) {
+        activePanel.style.transition = "none";
+        activePanel.style.transform = `translateX(${damped.toFixed(1)}px)`;
+      }
+    } else if (mode === "ptr") {
+      if (dy <= 0) return;
+      e.preventDefault();
+      const pull = Math.min(60, dy * 0.48);
+      const pct = Math.min(100, Math.round((pull / 48) * 100));
+      ptrWrap.style.height = `${pull.toFixed(0)}px`;
+      ptrWrap.style.opacity = `${Math.min(1, pull / 32).toFixed(2)}`;
+      ptrArc.setAttribute("stroke-dasharray", `${pct} 100`);
+      ptrLbl.textContent = pull >= 48 ? "松手立即同步" : "下拉同步";
+    }
+  }, { passive: false });
+
+  async function finishGesture() {
+    if (!tracking) return;
+    tracking = false;
+
+    if (mode === "h") {
+      const dt = Date.now() - t0;
+      const idx = TAB_ORDER.indexOf(CURRENT_TAB);
+      const swipeRight = lastDx > 54 || (lastDx > 28 && dt < 220);
+      const swipeLeft = lastDx < -54 || (lastDx < -28 && dt < 220);
+      if (swipeLeft && idx < TAB_ORDER.length - 1) {
+        switchTab(TAB_ORDER[idx + 1], 1);
+      } else if (swipeRight && idx > 0) {
+        switchTab(TAB_ORDER[idx - 1], -1);
+      } else {
+        const activePanel = document.querySelector(".view-panel.active");
+        if (activePanel) {
+          activePanel.style.transition = "transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)";
+          activePanel.style.transform = "translateX(0)";
+          setTimeout(() => { activePanel.style.transition = ""; activePanel.style.transform = ""; }, 230);
+        }
+      }
+    } else if (mode === "ptr") {
+      ptrWrap.classList.remove("dragging");
+      const pull = Math.min(60, Math.max(0, lastDy * 0.48));
+      if (pull >= 48 && !ptrBusy) {
+        ptrBusy = true;
+        ptrWrap.classList.add("syncing");
+        ptrWrap.style.height = "42px";
+        ptrWrap.style.opacity = "1";
+        ptrArc.setAttribute("stroke-dasharray", "68 100");
+        ptrLbl.textContent = "同步中…";
+        await pullFromCloud(false);
+        setTimeout(() => {
+          ptrWrap.classList.remove("syncing");
+          ptrWrap.style.height = "0px";
+          ptrWrap.style.opacity = "0";
+          ptrBusy = false;
+        }, 280);
+      } else {
+        ptrWrap.style.height = "0px";
+        ptrWrap.style.opacity = "0";
+      }
+    }
+    mode = "";
+  }
+
+  stage.addEventListener("touchend", finishGesture, { passive: true });
+  stage.addEventListener("touchcancel", finishGesture, { passive: true });
+})();
+
+/* ===================== 8. INTERACTIVE BODY CHART SCRUBBING ===================== */
+(function bindChartScrub() {
+  const wrap = document.getElementById("body-chart-wrap");
+  if (!wrap) return;
+  let active = false;
+
+  function scrubAtClientPos(clientX, clientY) {
+    if (!CHART_PTS.length) return;
+    const svg = document.getElementById("body-chart-svg");
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    if (!rect.width) return;
+
+    let ratio = 0;
+    if (FP_ANGLE === 90) {
+      ratio = (rect.bottom - clientY) / rect.height;
+    } else if (FP_ANGLE === 270) {
+      ratio = (clientY - rect.top) / rect.height;
+    } else {
+      ratio = (clientX - rect.left) / rect.width;
+    }
+    const svgX = Math.max(0, Math.min(360, ratio * 360));
+
+    let bestIdx = 0;
+    let bestDist = Infinity;
+    for (let i = 0; i < CHART_PTS.length; i++) {
+      const dist = Math.abs(CHART_PTS[i].x - svgX);
+      if (dist < bestDist) { bestDist = dist; bestIdx = i; }
+    }
+
+    if (bestIdx === CHART_SCRUB_IDX) return;
+    CHART_SCRUB_IDX = bestIdx;
+    const pt = CHART_PTS[bestIdx];
+
+    const cursor = document.getElementById("chart-cursor");
+    const halo = document.getElementById("chart-halo");
+    const focus = document.getElementById("chart-focus");
+    if (cursor && halo && focus) {
+      cursor.setAttribute("x1", pt.x);
+      cursor.setAttribute("x2", pt.x);
+      cursor.style.display = "";
+      halo.setAttribute("cx", pt.x);
+      halo.setAttribute("cy", pt.y);
+      halo.style.display = "";
+      focus.setAttribute("cx", pt.x);
+      focus.setAttribute("cy", pt.y);
+      focus.style.display = "";
+    }
+    applyBodyHeadline(getFitnessDate(), getLatestBodyMetrics(), pt);
+  }
+
+  function endScrub() {
+    if (!active && CHART_SCRUB_IDX === -1) return;
+    active = false;
+    CHART_SCRUB_IDX = -1;
+    const cursor = document.getElementById("chart-cursor");
+    const halo = document.getElementById("chart-halo");
+    const focus = document.getElementById("chart-focus");
+    if (cursor) cursor.style.display = "none";
+    if (halo) halo.style.display = "none";
+    if (focus) focus.style.display = "none";
+    applyBodyHeadline(getFitnessDate(), getLatestBodyMetrics(), null);
+  }
+
+  wrap.addEventListener("pointerdown", (e) => {
+    if (!CHART_PTS.length) return;
+    active = true;
+    try { wrap.setPointerCapture(e.pointerId); } catch (err) {}
+    scrubAtClientPos(e.clientX, e.clientY);
+  });
+  wrap.addEventListener("pointermove", (e) => {
+    if (!active && e.pointerType !== "mouse") return;
+    if (!active && e.buttons === 0) return;
+    scrubAtClientPos(e.clientX, e.clientY);
+  });
+  wrap.addEventListener("pointerup", endScrub);
+  wrap.addEventListener("pointercancel", endScrub);
+  wrap.addEventListener("pointerleave", () => { if (!active) endScrub(); });
+})();
+
+/* ===================== 9. ZERO-KEYBOARD TACTILE WEIGH-IN DIAL ===================== */
+function renderDialValues() {
+  const wtSlot = document.getElementById("dial-wt-slot");
+  const bfSlot = document.getElementById("dial-bf-slot");
+  if (wtSlot && !wtSlot.querySelector("input")) {
+    wtSlot.innerHTML = `<button class="dial-val-btn" id="dial-wt-val" onclick="editDialInline('wt')">${DIAL_WT.toFixed(1)}</button>`;
+  }
+  if (bfSlot && !bfSlot.querySelector("input")) {
+    bfSlot.innerHTML = `<button class="dial-val-btn" id="dial-bf-val" onclick="editDialInline('bf')" style="${DIAL_SKIP_BF ? "opacity:0.35;" : ""}">${DIAL_SKIP_BF ? "--" : DIAL_BF.toFixed(1)}</button>`;
+  }
+  const tw = document.getElementById("dial-ticks-wt");
+  const tb = document.getElementById("dial-ticks-bf");
+  if (tw) tw.style.backgroundPosition = `${DIAL_WT_OFFSET.toFixed(1)}px 0`;
+  if (tb) tb.style.backgroundPosition = `${DIAL_BF_OFFSET.toFixed(1)}px 0`;
+  const skipBtn = document.getElementById("dial-bf-skip-btn");
+  if (skipBtn) {
+    skipBtn.textContent = DIAL_SKIP_BF ? "改为同时记体脂" : "仅记体重";
+    skipBtn.className = `btn-quiet ${DIAL_SKIP_BF ? "is-active-moss" : ""}`;
+  }
+}
+
+function nudgeDial(which, delta) {
+  if (which === "wt") {
+    DIAL_WT = Math.max(45, Math.min(120, +(DIAL_WT + delta).toFixed(1)));
+    DIAL_WT_OFFSET -= delta * 100;
+  } else {
+    DIAL_SKIP_BF = false;
+    DIAL_BF = Math.max(6, Math.min(40, +(DIAL_BF + delta).toFixed(1)));
+    DIAL_BF_OFFSET -= delta * 100;
+  }
+  renderDialValues();
+}
+
+function toggleSkipBf() {
+  DIAL_SKIP_BF = !DIAL_SKIP_BF;
+  renderDialValues();
+}
+
+function editDialInline(which) {
+  const slot = document.getElementById(which === "wt" ? "dial-wt-slot" : "dial-bf-slot");
+  if (!slot) return;
+  const cur = which === "wt" ? DIAL_WT.toFixed(1) : DIAL_BF.toFixed(1);
+  slot.innerHTML = `<input class="dial-inline-input" type="number" step="0.1" inputmode="decimal" value="${cur}" />`;
+  const inp = slot.querySelector("input");
+  inp.focus();
+  inp.select();
+  const commit = () => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) {
+      if (which === "wt" && v >= 45 && v <= 120) DIAL_WT = +v.toFixed(1);
+      if (which === "bf" && v >= 6 && v <= 40) { DIAL_BF = +v.toFixed(1); DIAL_SKIP_BF = false; }
+    }
+    slot.innerHTML = "";
+    renderDialValues();
+  };
+  inp.addEventListener("blur", commit);
+  inp.addEventListener("keydown", (e) => { if (e.key === "Enter") inp.blur(); });
+}
+
+(function bindDialTracks() {
+  const pairs = [
+    { id: "dial-track-wt", key: "wt", min: 45, max: 120, pxPerStep: 11 },
+    { id: "dial-track-bf", key: "bf", min: 6, max: 40, pxPerStep: 13 }
+  ];
+  for (const cfg of pairs) {
+    const el = document.getElementById(cfg.id);
+    if (!el) continue;
+    let dragging = false;
+    let startPos = 0;
+    let startVal = 0;
+    let startOff = 0;
+
+    el.addEventListener("pointerdown", (e) => {
+      dragging = true;
+      startPos = FP_ANGLE === 90 ? -e.clientY : (FP_ANGLE === 270 ? e.clientY : e.clientX);
+      startVal = cfg.key === "wt" ? DIAL_WT : DIAL_BF;
+      startOff = cfg.key === "wt" ? DIAL_WT_OFFSET : DIAL_BF_OFFSET;
+      if (cfg.key === "bf") DIAL_SKIP_BF = false;
+      try { el.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    el.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const curPos = FP_ANGLE === 90 ? -e.clientY : (FP_ANGLE === 270 ? e.clientY : e.clientX);
+      const dx = curPos - startPos;
+      // Dragging left increases value (like rolling a physical ruler), right decreases
+      const steps = Math.round(-dx / cfg.pxPerStep);
+      const nextVal = Math.max(cfg.min, Math.min(cfg.max, +(startVal + steps * 0.1).toFixed(1)));
+      if (cfg.key === "wt") {
+        DIAL_WT = nextVal;
+        DIAL_WT_OFFSET = startOff + dx;
+      } else {
+        DIAL_BF = nextVal;
+        DIAL_BF_OFFSET = startOff + dx;
+      }
+      renderDialValues();
+    });
+    const stop = () => { dragging = false; };
+    el.addEventListener("pointerup", stop);
+    el.addEventListener("pointercancel", stop);
+  }
+})();
+
+function toggleWeighForm(forceOpen) {
+  const f = document.getElementById("weigh-drawer");
+  const open = typeof forceOpen === "boolean" ? forceOpen : !f.classList.contains("open");
+  if (open) {
+    const body = getLatestBodyMetrics();
+    DIAL_WT = body.latestWt ? +body.latestWt.val.toFixed(1) : 81.5;
+    DIAL_BF = body.latestBf ? +body.latestBf.val.toFixed(1) : 18.0;
+    DIAL_SKIP_BF = false;
+    renderDialValues();
+  }
+  f.classList.toggle("open", open);
+  document.getElementById("toggle-weigh-btn").textContent = open ? "收起" : "记一次 GE 秤";
+}
+
+function saveDialWeigh() {
+  const wtVal = +DIAL_WT.toFixed(1);
+  const bf = DIAL_SKIP_BF ? null : +DIAL_BF.toFixed(1);
   const today = getFitnessDate();
+  const d = ensureDay(today);
+  d.wt = wtVal;
+  if (bf !== null) d.bf = bf;
+
+  if (!Array.isArray(STATE.wb)) STATE.wb = [];
+  const idx = STATE.wb.findIndex(r => r[0] === today);
+  const row = [today, wtVal, bf, "phone"];
+  if (idx >= 0) STATE.wb[idx] = row;
+  else STATE.wb.push(row);
+  STATE.wb.sort((a, b) => a[0].localeCompare(b[0]));
+
+  toggleWeighForm(false);
+  schedulePush();
+  renderAll();
+  showToast(bf !== null ? `已记 ${wtVal.toFixed(1)} kg · GE ${bf.toFixed(1)}%` : `已记体重 ${wtVal.toFixed(1)} kg`);
+}
+
+/* ===================== 10. PULL-UP 4-SECOND ECCENTRIC PACER ===================== */
+function playZenChime(freq = 528) {
+  if (!PACER_SOUND) return;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    if (!AUDIO_CTX) AUDIO_CTX = new Ctx();
+    if (AUDIO_CTX.state === "suspended") AUDIO_CTX.resume();
+    const now = AUDIO_CTX.currentTime;
+    const osc = AUDIO_CTX.createOscillator();
+    const gain = AUDIO_CTX.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq, now);
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.exponentialRampToValueAtTime(0.09, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.36);
+    osc.connect(gain);
+    gain.connect(AUDIO_CTX.destination);
+    osc.start(now);
+    osc.stop(now + 0.38);
+  } catch (e) {}
+}
+
+async function acquireWakeLock() {
+  try {
+    if ("wakeLock" in navigator && !PACER_WAKE_LOCK) {
+      PACER_WAKE_LOCK = await navigator.wakeLock.request("screen");
+    }
+  } catch (e) {}
+}
+
+function releaseWakeLock() {
+  try {
+    if (PACER_WAKE_LOCK) {
+      PACER_WAKE_LOCK.release().catch(() => {});
+      PACER_WAKE_LOCK = null;
+    }
+  } catch (e) {}
+}
+
+function togglePacerSound() {
+  PACER_SOUND = !PACER_SOUND;
+  const btn = document.getElementById("pacer-sound-btn");
+  if (btn) {
+    btn.textContent = PACER_SOUND ? "轻音：开" : "轻音：关";
+    btn.className = `btn-quiet ${PACER_SOUND ? "is-active-moss" : ""}`;
+  }
+  if (PACER_SOUND) playZenChime(528);
+}
+
+function togglePacer() {
+  if (PACER_ACTIVE) {
+    stopPacer(true);
+    return;
+  }
+  const today = getFitnessDate();
+  const rounds = (getDayEntry(today).pu || []).length;
+  if (rounds >= 2) {
+    showToast("今天 2 轮已满额，明天继续更长劲");
+    return;
+  }
+  startPacer();
+}
+
+function startPacer() {
+  PACER_ACTIVE = true;
+  document.getElementById("pacer-box").classList.add("open");
+  const pacerBtn = document.getElementById("pu-pacer-btn");
+  pacerBtn.textContent = "节拍进行中";
+  pacerBtn.className = "btn-quiet is-active-moss";
+  acquireWakeLock();
+
+  const totalReps = Math.max(1, 3 - PU_STRICT_INPUT);
+  const steps = [{ kind: "prep", dur: 3000, label: "准备抓杠 · 顶住下巴" }];
+  for (let i = 1; i <= totalReps; i++) {
+    steps.push({ kind: "down", dur: 4000, label: `匀速慢放 · 第 ${i} / ${totalReps} 次` });
+    if (i < totalReps) {
+      steps.push({ kind: "rest", dur: 4000, label: "轻落换气 · 准备下一次" });
+    }
+  }
+
+  let stepIdx = 0;
+  let stepStart = performance.now();
+  let lastChimeStep = -1;
+
+  const arcEl = document.getElementById("pacer-arc");
+  const numEl = document.getElementById("pacer-num");
+  const phaseEl = document.getElementById("pacer-phase");
+
+  function frame(now) {
+    if (!PACER_ACTIVE) return;
+    const cur = steps[stepIdx];
+    if (lastChimeStep !== stepIdx) {
+      lastChimeStep = stepIdx;
+      playZenChime(cur.kind === "down" ? 440 : 528);
+    }
+    const elapsed = now - stepStart;
+    const ratio = Math.min(1, elapsed / cur.dur);
+    const remSec = Math.max(0, (cur.dur - elapsed) / 1000);
+
+    phaseEl.textContent = cur.label;
+    if (cur.kind === "down") {
+      // Smoothly contract ring 100 -> 0 over 4.0 seconds
+      const pct = Math.max(0, (1 - ratio) * 100);
+      arcEl.setAttribute("stroke", "var(--moss)");
+      arcEl.setAttribute("stroke-dasharray", `${pct.toFixed(1)} 100`);
+      numEl.textContent = Math.max(1, Math.ceil(remSec));
+    } else if (cur.kind === "prep") {
+      const pct = ratio * 100;
+      arcEl.setAttribute("stroke", "var(--ochre)");
+      arcEl.setAttribute("stroke-dasharray", `${pct.toFixed(1)} 100`);
+      numEl.textContent = Math.max(1, Math.ceil(remSec));
+    } else {
+      const pct = ratio * 100;
+      arcEl.setAttribute("stroke", "var(--ink-3)");
+      arcEl.setAttribute("stroke-dasharray", `${pct.toFixed(1)} 100`);
+      numEl.textContent = Math.max(1, Math.ceil(remSec));
+    }
+
+    if (elapsed >= cur.dur) {
+      stepIdx++;
+      if (stepIdx >= steps.length) {
+        playZenChime(660);
+        arcEl.setAttribute("stroke", "var(--moss)");
+        arcEl.setAttribute("stroke-dasharray", "100 100");
+        numEl.textContent = "✓";
+        phaseEl.textContent = "慢放完成，已记入本轮";
+        PACER_ACTIVE = false;
+        releaseWakeLock();
+        logPullupRound();
+        setTimeout(() => {
+          const box = document.getElementById("pacer-box");
+          if (box && !PACER_ACTIVE) box.classList.remove("open");
+        }, 1200);
+        return;
+      }
+      stepStart = now;
+    }
+    PACER_RAF = requestAnimationFrame(frame);
+  }
+
+  PACER_RAF = requestAnimationFrame(frame);
+}
+
+function stopPacer(withToast) {
+  PACER_ACTIVE = false;
+  if (PACER_RAF) {
+    cancelAnimationFrame(PACER_RAF);
+    PACER_RAF = null;
+  }
+  releaseWakeLock();
+  const box = document.getElementById("pacer-box");
+  if (box) box.classList.remove("open");
+  const pacerBtn = document.getElementById("pu-pacer-btn");
+  if (pacerBtn) {
+    pacerBtn.textContent = "4 秒慢放节拍";
+    pacerBtn.className = "btn-quiet";
+  }
+  if (withToast) showToast("已停止慢放节拍");
+}
+
+/* ===================== 11. CORE INTERACTIONS & LEDGER EDITING ===================== */
+function ensureDay(ymd) {
   if (!STATE.days) STATE.days = {};
-  if (!STATE.days[today]) STATE.days[today] = { ts: 0, pu: [], diet: 0 };
-  STATE.days[today].ts = Math.floor(Date.now() / 1000);
-  return STATE.days[today];
+  if (!STATE.days[ymd]) STATE.days[ymd] = { ts: 0, pu: [], diet: 0 };
+  STATE.days[ymd].ts = Math.floor(Date.now() / 1000);
+  return STATE.days[ymd];
 }
 
 function setPeloMin(m) {
@@ -1911,7 +2989,7 @@ function setPeloMin(m) {
 }
 
 function markPeloton(status) {
-  const d = ensureTodayDay();
+  const d = ensureDay(getFitnessDate());
   if (d.pelo === status) {
     d.pelo = null;
     d.pelo_min = 0;
@@ -1926,7 +3004,7 @@ function markPeloton(status) {
 }
 
 function toggleBasketball(level) {
-  const d = ensureTodayDay();
+  const d = ensureDay(getFitnessDate());
   if (d.bb === level) {
     d.bb = null;
     showToast("已恢复默认排课");
@@ -1939,17 +3017,18 @@ function toggleBasketball(level) {
 }
 
 function quickPullupTap(roundNum) {
-  const d = ensureTodayDay();
+  const d = ensureDay(getFitnessDate());
   if (!Array.isArray(d.pu)) d.pu = [];
   const stg = getPullupStage();
+  const nowSec = Math.floor(Date.now() / 1000);
   if (d.pu.length >= roundNum) {
     d.pu = d.pu.slice(0, roundNum - 1);
     showToast(`已撤销第 ${roundNum} 轮`);
   } else {
     while (d.pu.length < roundNum) {
-      d.pu.push([stg.defaultStrict, stg.negReps]);
+      d.pu.push([stg.defaultStrict, stg.negReps, nowSec]);
     }
-    showToast(`第 ${roundNum} 轮引体已记`);
+    showToast(roundNum === 1 ? "第 1 轮已记 · 2 小时后再拉第 2 轮" : "第 2 轮已记 · 今日引体收工");
   }
   schedulePush();
   renderAll();
@@ -1961,26 +3040,26 @@ function adjStrict(delta) {
 }
 
 function logPullupRound() {
-  const d = ensureTodayDay();
+  const d = ensureDay(getFitnessDate());
   if (!Array.isArray(d.pu)) d.pu = [];
   if (d.pu.length >= 2) {
     showToast("今天 2 轮已满额，明天继续更长劲");
     return;
   }
   const neg = Math.max(0, 3 - PU_STRICT_INPUT);
-  d.pu.push([PU_STRICT_INPUT, neg]);
+  d.pu.push([PU_STRICT_INPUT, neg, Math.floor(Date.now() / 1000)]);
   if (PU_STRICT_INPUT > (STATE.pu_best || 1)) {
     STATE.pu_best = PU_STRICT_INPUT;
     showToast(`新纪录！标准不甩 ${PU_STRICT_INPUT} 个`);
   } else {
-    showToast(`第 ${d.pu.length} 轮已记`);
+    showToast(d.pu.length === 1 ? "第 1 轮已记 · 2 小时后再拉第 2 轮" : "第 2 轮已记 · 今日引体收工");
   }
   schedulePush();
   renderAll();
 }
 
 function undoPullupRound() {
-  const d = ensureTodayDay();
+  const d = ensureDay(getFitnessDate());
   if (Array.isArray(d.pu) && d.pu.length > 0) {
     d.pu.pop();
     schedulePush();
@@ -1990,7 +3069,7 @@ function undoPullupRound() {
 }
 
 function toggleDiet() {
-  const d = ensureTodayDay();
+  const d = ensureDay(getFitnessDate());
   d.diet = d.diet ? 0 : 1;
   schedulePush();
   renderAll();
@@ -2006,39 +3085,48 @@ function setChartRange(r) {
   renderAll();
 }
 
-function toggleWeighForm() {
-  const f = document.getElementById("weigh-form");
-  const open = !f.classList.contains("open");
-  f.classList.toggle("open", open);
-  document.getElementById("toggle-weigh-btn").textContent = open ? "收起" : "记一次 GE 秤";
+function toggleLedgerDay(ymd) {
+  EXPANDED_LEDGER_DATE = EXPANDED_LEDGER_DATE === ymd ? null : ymd;
+  renderAll();
 }
 
-function saveManualWeigh() {
-  const wtVal = parseFloat(document.getElementById("in-wt").value);
-  const bfVal = parseFloat(document.getElementById("in-bf").value);
-  if (isNaN(wtVal) || wtVal < 40 || wtVal > 160) {
-    showToast("请输入有效体重 (kg)");
-    return;
+function editLedgerCardio(ymd, field, val) {
+  const d = ensureDay(ymd);
+  if (field === "clear") {
+    d.pelo = null;
+    d.pelo_min = 0;
+    d.bb = null;
+    showToast(`${ymd.slice(5)} 心肺记录已清空`);
+  } else if (field === "pelo") {
+    d.pelo = d.pelo === val ? null : val;
+    d.pelo_min = d.pelo === "done" ? 40 : (d.pelo === "recovery" ? 20 : 0);
+    showToast(`${ymd.slice(5)} 已更新`);
+  } else if (field === "bb") {
+    d.bb = d.bb === val ? null : val;
+    showToast(`${ymd.slice(5)} 篮球记录已更新`);
   }
-  const bf = (!isNaN(bfVal) && bfVal >= 5 && bfVal <= 45) ? +bfVal.toFixed(1) : null;
-  const today = getFitnessDate();
-  const d = ensureTodayDay();
-  d.wt = +wtVal.toFixed(2);
-  if (bf !== null) d.bf = bf;
-
-  if (!Array.isArray(STATE.wb)) STATE.wb = [];
-  const idx = STATE.wb.findIndex(r => r[0] === today);
-  const row = [today, +wtVal.toFixed(2), bf, "phone"];
-  if (idx >= 0) STATE.wb[idx] = row;
-  else STATE.wb.push(row);
-  STATE.wb.sort((a, b) => a[0].localeCompare(b[0]));
-
-  document.getElementById("in-wt").value = "";
-  document.getElementById("in-bf").value = "";
-  toggleWeighForm();
   schedulePush();
   renderAll();
-  showToast(bf !== null ? `已记 ${wtVal.toFixed(1)} kg · GE ${bf}%` : `已记体重 ${wtVal.toFixed(1)} kg`);
+}
+
+function editLedgerPullup(ymd, rounds) {
+  const d = ensureDay(ymd);
+  const stg = getPullupStage();
+  d.pu = [];
+  for (let i = 0; i < rounds; i++) {
+    d.pu.push([stg.defaultStrict, stg.negReps]);
+  }
+  schedulePush();
+  renderAll();
+  showToast(`${ymd.slice(5)} 引体已改为 ${rounds} 轮`);
+}
+
+function editLedgerDiet(ymd) {
+  const d = ensureDay(ymd);
+  d.diet = d.diet ? 0 : 1;
+  schedulePush();
+  renderAll();
+  showToast(d.diet ? `${ymd.slice(5)} 饮食达标已补记` : `${ymd.slice(5)} 已取消饮食打卡`);
 }
 
 function forcePullCloud() {
@@ -2051,10 +3139,38 @@ function showToast(msg) {
   el.textContent = msg;
   el.classList.add("show");
   clearTimeout(TOAST_TIMER);
-  TOAST_TIMER = setTimeout(() => el.classList.remove("show"), 2200);
+  TOAST_TIMER = setTimeout(() => el.classList.remove("show"), 2300);
 }
 
-/* ===================== 8. BOOTSTRAP ===================== */
+/* ===================== 12. QUICK SHORTCUT LAUNCH HANDLER ===================== */
+function handleQuickAction() {
+  const params = new URLSearchParams(window.location.search || "");
+  const quick = params.get("quick");
+  if (!quick) return;
+
+  // Strip ?quick=... while preserving #t=...&k=... hash intact for A2HS!
+  try {
+    history.replaceState(null, "", window.location.pathname + window.location.hash);
+  } catch (e) {}
+
+  if (quick === "pullup1") {
+    const today = getFitnessDate();
+    const cur = (getDayEntry(today).pu || []).length;
+    if (cur < 2) quickPullupTap(cur + 1);
+    else showToast("今天 2 轮引体已满额");
+  } else if (quick === "bb_high") {
+    const d = ensureDay(getFitnessDate());
+    d.bb = "high";
+    schedulePush();
+    renderAll();
+    showToast("已切换红档 · 今晚 Peloton 取消高强度");
+  } else if (quick === "weigh") {
+    switchTab("body");
+    toggleWeighForm(true);
+  }
+}
+
+/* ===================== 13. BOOTSTRAP ===================== */
 async function boot() {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js").catch(() => {});
@@ -2065,19 +3181,34 @@ async function boot() {
     return;
   }
   document.getElementById("main-app").style.display = "flex";
+  APP_READY = true;
   loadLocalState();
   syncPullupInputDefault();
   renderAll();
+  positionNavBars(true);
+
+  handleQuickAction();
 
   await pullFromCloud(true);
+  positionNavBars(true);
+
   try {
     if (localStorage.getItem(PENDING_PUSH_KEY)) await pushToCloudNow();
   } catch (e) {}
 
+  // Keep dynamic manifest color synced if phone toggles Dark/Light mode
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    if (mq.addEventListener) mq.addEventListener("change", () => { if (VAULT) updateDynamicManifest(VAULT); });
+  }
+
   // Auto refresh when returning to phone app or after 04:00 AM PT date rollover
   let lastRenderedDay = getFitnessDate();
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") {
+    if (document.visibilityState === "hidden" && PACER_ACTIVE) {
+      releaseWakeLock();
+    } else if (document.visibilityState === "visible") {
+      if (PACER_ACTIVE) acquireWakeLock();
       const curDay = getFitnessDate();
       if (curDay !== lastRenderedDay) {
         lastRenderedDay = curDay;
