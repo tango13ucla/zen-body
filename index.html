@@ -1579,12 +1579,24 @@ function mergeStates(a, b) {
   if (ta > tb) { puBest = Number(a.pu_best || 1); puBestTs = ta; }
   else if (tb > ta) { puBest = Number(b.pu_best || 1); puBestTs = tb; }
   else { puBest = Math.max(Number(a.pu_best || 1), Number(b.pu_best || 1)); puBestTs = ta; }
+  const pza = (a.pz && typeof a.pz === "object") ? a.pz : {};
+  const pzb = (b.pz && typeof b.pz === "object") ? b.pz : {};
+  const pzaTs = Number(pza.ts || 0), pzbTs = Number(pzb.ts || 0);
+  let pzOut;
+  if (pzaTs > pzbTs) pzOut = { idx: Math.max(0, Number(pza.idx != null ? pza.idx : 1)), ts: pzaTs, last: String(pza.last || "") };
+  else if (pzbTs > pzaTs) pzOut = { idx: Math.max(0, Number(pzb.idx != null ? pzb.idx : 1)), ts: pzbTs, last: String(pzb.last || "") };
+  else {
+    const ia = pza.idx != null ? Number(pza.idx) : 0, ib = pzb.idx != null ? Number(pzb.idx) : 0;
+    const la = String(pza.last || ""), lb = String(pzb.last || "");
+    pzOut = { idx: Math.max(ia, ib), ts: pzaTs, last: la >= lb ? la : lb };
+  }
   const out = {
     v: 1,
     ts: Math.max(a.ts || 0, b.ts || 0),
     targets: Object.assign({}, older.targets || {}, newer.targets || {}),
     pu_best: puBest,
     pu_best_ts: puBestTs,
+    pz: pzOut,
     vitals: Object.assign({}, older.vitals || {}, newer.vitals || {}),
     trips: (newer.trips && newer.trips.length) ? newer.trips : (older.trips || []),
     wb: [],
@@ -1661,6 +1673,7 @@ function compactStateForTransport(st) {
     targets: st.targets,
     pu_best: st.pu_best,
     pu_best_ts: st.pu_best_ts || 0,
+    pz: st.pz || { idx: 1, ts: 0, last: "2026-11-21" },
     vitals: st.vitals,
     trips: st.trips || [],
     wb: wbCompact,
