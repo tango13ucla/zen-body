@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="./icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+JP:wght@500;600&display=optional" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet" />
 <title>体律</title>
 <style>
   :root {
@@ -25,17 +25,21 @@
     --ink-2: #48443C;
     --ink-3: #847E72;
     --hairline: rgba(28, 27, 24, 0.09);
-    --hairline-strong: rgba(28, 27, 24, 0.18);
+    --hairline-strong: rgba(28, 27, 24, 0.17);
     --track: #E5E0D5;
     --moss: #2B5F49;
     --moss-solid: #2D7A56;
     --moss-soft: rgba(43, 95, 73, 0.09);
+    --moss-border: rgba(43, 95, 73, 0.28);
     --ochre: #A87633;
     --bengara: #9E3E36;
-    --toast-bg: #1C1B18;
-    --toast-fg: #FCFBF8;
-    --sans: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Noto Sans CJK SC", -apple-system, BlinkMacSystemFont, sans-serif;
-    --serif: "Hiragino Mincho ProN", "YuMincho", "Noto Serif JP", "Noto Serif CJK SC", "Songti SC", Georgia, serif;
+    --cta-bg: #252420;
+    --cta-fg: #F7F5EF;
+    --cta-border: transparent;
+    --toast-bg: #252420;
+    --toast-fg: #F7F5EF;
+    --sans: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", -apple-system, BlinkMacSystemFont, sans-serif;
+    --serif: var(--sans);
   }
 
   /* Adaptive Night-Ink Zen Mode (夜墨) */
@@ -47,15 +51,19 @@
       --ink-2: #B9B2A5;
       --ink-3: #868074;
       --hairline: rgba(234, 229, 218, 0.09);
-      --hairline-strong: rgba(234, 229, 218, 0.21);
+      --hairline-strong: rgba(234, 229, 218, 0.18);
       --track: #2F2D28;
       --moss: #62AD89;
       --moss-solid: #3F8B66;
       --moss-soft: rgba(98, 173, 137, 0.14);
+      --moss-border: rgba(98, 173, 137, 0.34);
       --ochre: #D2A35C;
       --bengara: #D46F66;
-      --toast-bg: #EAE5DA;
-      --toast-fg: #171614;
+      --cta-bg: #2A2824;
+      --cta-fg: #F2EDE3;
+      --cta-border: rgba(234, 229, 218, 0.22);
+      --toast-bg: #2A2824;
+      --toast-fg: #F2EDE3;
     }
   }
 
@@ -368,13 +376,13 @@
     margin-bottom: 10px;
   }
   .focal-title {
-    font-family: var(--serif);
-    font-size: clamp(20px, 5.3vw, 23px);
-    font-weight: 600;
-    line-height: 1.4;
+    font-family: var(--sans);
+    font-size: clamp(21px, 5.5vw, 24px);
+    font-weight: 400;
+    line-height: 1.42;
     color: var(--sumi);
     margin: 0 0 11px;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.03em;
   }
   .focal-sub {
     font-size: 14px;
@@ -391,16 +399,17 @@
     gap: 16px;
   }
 
-  /* Primary Solid Ink / Moss Button */
+  /* Primary Kyoto Stone Button */
   .btn-primary {
-    height: 44px;
+    height: 46px;
     padding: 0 22px;
-    border-radius: 999px;
-    background: var(--sumi);
-    color: var(--washi);
-    font-size: 14.5px;
+    border-radius: 12px;
+    background: var(--cta-bg);
+    color: var(--cta-fg);
+    border: 1px solid var(--cta-border);
+    font-size: 15px;
     font-weight: 500;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.07em;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -408,8 +417,9 @@
   }
   .btn-primary:active { transform: scale(0.96); }
   .btn-primary.is-done {
-    background: var(--moss-solid);
-    color: #FCFBF8;
+    background: var(--moss-soft);
+    border-color: var(--moss-border);
+    color: var(--moss);
   }
 
   /* Frameless Muted Ink Secondary Action */
@@ -944,9 +954,10 @@
     padding: 20px 4px;
   }
   .locked-title {
-    font-family: var(--serif);
-    font-size: 24px;
-    font-weight: 600;
+    font-family: var(--sans);
+    font-size: 26px;
+    font-weight: 300;
+    letter-spacing: 0.14em;
     margin: 18px 0 10px;
   }
   .locked-sub {
