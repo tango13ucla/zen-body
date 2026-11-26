@@ -1,4 +1,4 @@
-const CACHE_NAME = "zen-body-shell-v4";
+const CACHE_NAME = "zen-body-shell-v5";
 const SHELL_ASSETS = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -60,9 +60,22 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Never intercept cross-origin sync traffic (e.g. ntfy.sh) or live encrypted vault snapshot
+  // Never intercept cross-origin sync traffic (e.g. ntfy.sh)
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.endsWith("vault.enc")) return;
+
+  // Network-First with offline fallback for encrypted vault.enc (fresh online, resilient on flights)
+  if (url.pathname.endsWith("vault.enc")) {
+    event.respondWith(
+      fetch(req, { cache: "no-store" }).then((res) => {
+        if (res && res.status === 200) {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((c) => c.put("./vault.enc", copy)).catch(() => {});
+        }
+        return res;
+      }).catch(() => caches.match("./vault.enc"))
+    );
+    return;
+  }
 
   const isDocNav =
     req.mode === "navigate" ||
