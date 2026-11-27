@@ -1,4 +1,5 @@
-const CACHE_NAME = "zen-body-shell-v6";
+const CACHE_NAME = "zen-body-shell-v7";
+const IMMUTABLE_CACHE = "zen-immutable-v1";
 const SHELL_ASSETS = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -42,10 +43,10 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
 
-  // Cache-First for Google Fonts so Kyoto Zen typography renders in 0ms even offline
+  // Permanent Cache-First for Google Fonts so Kyoto Zen typography renders in 0ms across app updates
   if (url.origin === "https://fonts.googleapis.com" || url.origin === "https://fonts.gstatic.com") {
     event.respondWith(
-      caches.open(CACHE_NAME).then((cache) =>
+      caches.open(IMMUTABLE_CACHE).then((cache) =>
         cache.match(req).then((cached) => {
           if (cached) return cached;
           return fetch(req).then((res) => {
@@ -53,7 +54,7 @@ self.addEventListener("fetch", (event) => {
               cache.put(req, res.clone()).catch(() => {});
             }
             return res;
-          });
+          }).catch(() => cached);
         })
       )
     );
