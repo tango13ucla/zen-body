@@ -1,4 +1,4 @@
-const CACHE_NAME = "zen-body-shell-v5";
+const CACHE_NAME = "zen-body-shell-v6";
 const SHELL_ASSETS = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -82,13 +82,13 @@ self.addEventListener("fetch", (event) => {
     url.pathname.endsWith("/") ||
     url.pathname.endsWith("/index.html");
 
-  // Stale-While-Revalidate for 0ms instant native-like launch + silent background freshness
+  // Stale-While-Revalidate for 0ms instant native-like launch + silent ETag-validated refresh
   event.respondWith(
     caches.open(CACHE_NAME).then(async (cache) => {
       const matchKey = isDocNav ? "./index.html" : req;
       const cached = await cache.match(matchKey, { ignoreSearch: isDocNav });
 
-      const networkFetch = fetch(isDocNav ? "./index.html" : req, { cache: "no-store" })
+      const networkFetch = fetch(isDocNav ? "./index.html" : req, { cache: "no-cache" })
         .then((res) => {
           if (res && res.status === 200) {
             cache.put(matchKey, res.clone()).catch(() => {});

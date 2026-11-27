@@ -75,7 +75,7 @@
   }
   body {
     display: flex; flex-direction: column; align-items: center;
-    padding: calc(14px + env(safe-area-inset-top)) 24px calc(12px + env(safe-area-inset-bottom));
+    padding: calc(14px + env(safe-area-inset-top)) 24px calc(12px + env(safe-area-inset-bottom) + var(--kb-pad, 0px));
   }
   .zen-shell {
     width: 100%; max-width: 496px; flex: 1; min-height: 0;
@@ -84,7 +84,9 @@
   button, a {
     font-family: inherit; white-space: nowrap; background: none; border: none;
     padding: 0; color: inherit; cursor: pointer; text-decoration: none;
+    touch-action: manipulation;
   }
+  button.is-pressed { transform: scale(0.975); opacity: 0.84; transition: transform 0.06s ease-out, opacity 0.06s ease-out !important; }
   input { font-family: inherit; -webkit-user-select: text; user-select: text; }
   .zen-horizon {
     flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
@@ -120,7 +122,7 @@
   .thumb-tab.active { color: var(--sumi); font-weight: 600; }
   .thumb-bar {
     position: absolute; left: 0; top: -11px; height: 1.5px; width: 28px;
-    background: var(--sumi); border-radius: 2px; pointer-events: none;
+    background: var(--sumi); border-radius: 2px; pointer-events: none; will-change: transform, width;
     transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), width 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   }
   @media (max-width: 859px) {
@@ -141,11 +143,15 @@
     position: fixed;
     inset: 0;
     background: rgba(28, 27, 24, 0.32);
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
     padding: 28px;
     z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.22s;
   }
   @media (prefers-color-scheme: dark) {
     .modal-mask { background: rgba(10, 9, 8, 0.66); }
@@ -156,28 +162,97 @@
       padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
     }
   }
-  .modal-mask.open { display: flex; }
+  .modal-mask.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s;
+  }
+  .modal-mask.sheet-dragging { transition: none; }
   .modal-card {
     width: 100%;
     max-width: 396px;
     max-height: 82vh;
+    max-height: 82dvh;
     overflow-y: auto;
+    overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     background: var(--sheet);
     border: 1px solid var(--hairline-strong);
     border-radius: 16px;
     padding: 24px 22px;
-    animation: modalRise 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    position: relative;
+    will-change: transform, opacity;
+    transform: translate3d(0, 14px, 0) scale(0.985);
+    opacity: 0;
+    transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
   }
-  @keyframes modalRise {
-    from { opacity: 0.4; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+  @media (max-width: 859px), (max-height: 520px) {
+    .modal-card {
+      padding-top: 26px;
+      transform: translate3d(0, 100%, 0);
+      opacity: 1;
+    }
+    .modal-card::before {
+      content: "";
+      position: absolute;
+      top: 9px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 36px;
+      height: 4px;
+      border-radius: 999px;
+      background: var(--hairline-strong);
+      opacity: 0.72;
+      pointer-events: none;
+    }
   }
+  .modal-mask.open .modal-card {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+  .modal-card.sheet-dragging { transition: none !important; }
   .modal-card::-webkit-scrollbar { display: none; }
   .modal-h { margin: 0 0 12px; font-size: 18px; font-weight: 500; letter-spacing: 0.05em; }
   .modal-body { margin: 0 0 14px; font-size: 15.5px; color: var(--ink-2); line-height: 1.85; font-variant-numeric: tabular-nums; }
   .modal-promise { margin: 0 0 16px; padding-top: 12px; border-top: 1px solid var(--hairline); font-size: 14.5px; color: var(--moss); line-height: 1.65; font-weight: 400; }
+  .install-app-row {
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--soft-bg);
+    border: 1px solid var(--hairline);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .install-app-copy { min-width: 0; flex: 1; }
+  .install-app-title { font-size: 14px; font-weight: 500; color: var(--sumi); letter-spacing: 0.02em; }
+  .install-app-sub { font-size: 12px; color: var(--ink-3); margin-top: 2px; line-height: 1.4; white-space: normal; }
+  .install-app-btn {
+    flex-shrink: 0;
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: var(--moss-soft);
+    border: 1px solid var(--moss-border);
+    color: var(--moss);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .install-app-hint {
+    margin: -8px 0 14px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    line-height: 1.55;
+    padding: 0 4px;
+  }
   .sync-box {
     margin: 0 0 18px;
     padding: 12px 14px;
@@ -276,6 +351,7 @@
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
+    overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     display: flex;
@@ -283,7 +359,7 @@
     padding: 0 0 10px;
   }
   .zb-stage::-webkit-scrollbar { display: none; }
-  .zb-panel { display: none; flex-direction: column; flex: 1; min-height: 100%; will-change: transform, opacity; }
+  .zb-panel { display: none; flex-direction: column; flex: 1; min-height: 100%; contain: layout style; will-change: transform, opacity; }
   .zb-panel.active { display: flex; }
   .zb-panel.zb-slide-r { animation: zbSlideR 0.23s cubic-bezier(0.22, 1, 0.36, 1); }
   .zb-panel.zb-slide-l { animation: zbSlideL 0.23s cubic-bezier(0.22, 1, 0.36, 1); }
@@ -1128,22 +1204,241 @@ function isCloudSyncBlockedEnv(locObj, navObj) {
 }
 const CLOUD_SYNC_BLOCKED = isCloudSyncBlockedEnv();
 
-function closeModal() {
-  const mm = document.getElementById("app-modal");
-  if (mm) mm.classList.remove("open");
+let deferredInstallPrompt = null;
+function isStandaloneApp() {
+  try {
+    if (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) return true;
+    if (window.navigator && window.navigator.standalone === true) return true;
+  } catch (e) {}
+  return false;
+}
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+});
+window.addEventListener("appinstalled", () => {
+  deferredInstallPrompt = null;
+  const row = document.getElementById("install-app-row");
+  if (row) row.style.display = "none";
+});
+async function triggerPwaInstall() {
+  const hint = document.getElementById("install-app-hint");
+  if (deferredInstallPrompt && typeof deferredInstallPrompt.prompt === "function") {
+    try {
+      deferredInstallPrompt.prompt();
+      const res = await deferredInstallPrompt.userChoice;
+      if (res && res.outcome === "accepted") {
+        deferredInstallPrompt = null;
+        const row = document.getElementById("install-app-row");
+        if (row) row.style.display = "none";
+        if (hint) hint.style.display = "none";
+        return;
+      }
+    } catch (e) {}
+  }
+  if (hint) {
+    hint.textContent = "请点浏览器右上角「⋮」菜单，再点「安装应用」或「添加到主屏幕」，即可全屏启动。";
+    hint.style.display = "block";
+  }
 }
 
+try {
+  if (navigator.storage && typeof navigator.storage.persist === "function") {
+    navigator.storage.persist().catch(() => {});
+  }
+} catch (e) {}
+
+(function bindNativePressFeedback() {
+  let activeEl = null, sx = 0, sy = 0;
+  const clear = () => {
+    if (activeEl) { activeEl.classList.remove("is-pressed"); activeEl = null; }
+  };
+  document.addEventListener("pointerdown", e => {
+    if (e.button && e.button !== 0) return;
+    const btn = e.target && e.target.closest ? e.target.closest("button") : null;
+    if (!btn || btn.disabled) return;
+    clear();
+    activeEl = btn;
+    sx = e.clientX || 0; sy = e.clientY || 0;
+    btn.classList.add("is-pressed");
+  }, { passive: true });
+  document.addEventListener("pointermove", e => {
+    if (!activeEl) return;
+    if (Math.hypot((e.clientX || 0) - sx, (e.clientY || 0) - sy) > 10) clear();
+  }, { passive: true });
+  document.addEventListener("pointerup", clear, { passive: true });
+  document.addEventListener("pointercancel", clear, { passive: true });
+  window.addEventListener("blur", clear, { passive: true });
+})();
+
+(function bindVisualViewportInset() {
+  const vv = window.visualViewport;
+  if (!vv || !vv.addEventListener) return;
+  const syncKb = () => {
+    const kb = Math.max(0, Math.round(window.innerHeight - vv.height - (vv.offsetTop || 0)));
+    document.documentElement.style.setProperty("--kb-pad", kb > 80 ? `${kb}px` : "0px");
+  };
+  vv.addEventListener("resize", syncKb, { passive: true });
+  vv.addEventListener("scroll", syncKb, { passive: true });
+})();
+
+const NAV_LAYER_STACK = [];
+let handlingPopstate = false;
+function pushNavLayer(kind) {
+  if (handlingPopstate || !window.history || typeof history.pushState !== "function") return;
+  if (NAV_LAYER_STACK[NAV_LAYER_STACK.length - 1] === kind) return;
+  NAV_LAYER_STACK.push(kind);
+  try { history.pushState({ zbLayer: kind, idx: NAV_LAYER_STACK.length }, ""); } catch (e) {}
+}
+function popNavLayer(kind) {
+  if (handlingPopstate) return;
+  const idx = NAV_LAYER_STACK.lastIndexOf(kind);
+  if (idx < 0) return;
+  NAV_LAYER_STACK.splice(idx, 1);
+  if (idx === NAV_LAYER_STACK.length && window.history && typeof history.back === "function") {
+    try {
+      if (history.state && history.state.zbLayer === kind) {
+        handlingPopstate = true;
+        history.back();
+        setTimeout(() => { handlingPopstate = false; }, 120);
+      }
+    } catch (e) { handlingPopstate = false; }
+  }
+}
+window.addEventListener("popstate", () => {
+  if (handlingPopstate || !NAV_LAYER_STACK.length) return;
+  handlingPopstate = true;
+  const top = NAV_LAYER_STACK.pop();
+  try {
+    if (top === "modal") closeModal(true);
+  } catch (e) {}
+  handlingPopstate = false;
+});
+
+function showAppModal() {
+  const mm = document.getElementById("app-modal");
+  const mc = document.getElementById("modal-content");
+  if (!mm) return;
+  if (mc) {
+    mc.classList.remove("sheet-dragging");
+    mc.style.transform = "";
+  }
+  mm.classList.remove("sheet-dragging");
+  mm.style.opacity = "";
+  const alreadyOpen = mm.classList.contains("open");
+  mm.classList.add("open");
+  if (!alreadyOpen) pushNavLayer("modal");
+  if (mc) {
+    const resetScroll = () => { try { mc.scrollTop = 0; } catch (e) {} };
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(resetScroll);
+    else resetScroll();
+  }
+}
+
+function closeModal(fromPop) {
+  const mm = document.getElementById("app-modal");
+  const mc = document.getElementById("modal-content");
+  if (mc) {
+    mc.classList.remove("sheet-dragging");
+    mc.style.transform = "";
+  }
+  if (mm) {
+    const wasOpen = mm.classList.contains("open");
+    mm.classList.remove("sheet-dragging", "open");
+    mm.style.opacity = "";
+    if (wasOpen && !fromPop) popNavLayer("modal");
+  }
+}
+
+(function bindBottomSheetDragDismiss() {
+  const mm = document.getElementById("app-modal");
+  const mc = document.getElementById("modal-content");
+  if (!mm || !mc || !mc.addEventListener) return;
+  let dragging = false, sy = 0, dy = 0, st = 0, rafId = 0;
+  const applyDragFrame = () => {
+    rafId = 0;
+    if (!dragging) return;
+    mc.style.transform = `translate3d(0, ${dy.toFixed(1)}px, 0)`;
+    mm.style.opacity = Math.max(0.08, 1 - dy / 340).toFixed(3);
+  };
+  mc.addEventListener("touchstart", e => {
+    if (!mm.classList.contains("open") || !e.touches || e.touches.length !== 1) return;
+    if (window.innerWidth > 859 && window.innerHeight > 520) return;
+    if ((mc.scrollTop || 0) > 2) return;
+    const tag = (e.target && e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea") return;
+    sy = e.touches[0].clientY; dy = 0; st = performance.now(); dragging = false;
+  }, { passive: true });
+  mc.addEventListener("touchmove", e => {
+    if (!mm.classList.contains("open") || !e.touches || e.touches.length !== 1) return;
+    if (window.innerWidth > 859 && window.innerHeight > 520) return;
+    const curDy = e.touches[0].clientY - sy;
+    if (!dragging) {
+      if ((mc.scrollTop || 0) > 2 || curDy < 10) return;
+      dragging = true;
+      mc.classList.add("sheet-dragging");
+      mm.classList.add("sheet-dragging");
+    }
+    if (dragging) {
+      if (e.cancelable) e.preventDefault();
+      dy = Math.max(0, curDy);
+      if (!rafId && typeof requestAnimationFrame === "function") rafId = requestAnimationFrame(applyDragFrame);
+      else if (typeof requestAnimationFrame !== "function") applyDragFrame();
+    }
+  }, { passive: false });
+  const endDrag = () => {
+    if (!dragging) return;
+    dragging = false;
+    if (rafId && typeof cancelAnimationFrame === "function") { cancelAnimationFrame(rafId); rafId = 0; }
+    const dt = Math.max(1, performance.now() - st);
+    const shouldClose = dy > 96 || (dy > 42 && dt < 220);
+    mc.classList.remove("sheet-dragging");
+    mm.classList.remove("sheet-dragging");
+    if (shouldClose) {
+      closeModal();
+    } else {
+      mc.style.transform = "";
+      mm.style.opacity = "";
+    }
+    dy = 0;
+  };
+  mc.addEventListener("touchend", endDrag, { passive: true });
+  mc.addEventListener("touchcancel", endDrag, { passive: true });
+})();
+
+let THUMB_NAV_CACHE = null;
 function positionThumbNavBar(immediate) {
   const bar = document.getElementById("zb-thumb-bar");
   const tabs = document.getElementById("zb-thumb-tabs");
-  const act = tabs ? tabs.querySelector(".thumb-tab.active") : null;
-  if (!bar || !act) return;
-  if (immediate) bar.style.transition = "none";
-  bar.style.width = `${Math.max(18, act.offsetWidth)}px`;
-  bar.style.transform = `translateX(${act.offsetLeft}px)`;
-  if (immediate) { void bar.offsetWidth; bar.style.transition = ""; }
+  if (!bar || !tabs) return;
+  const apply = () => {
+    if (!THUMB_NAV_CACHE) {
+      const btns = tabs.querySelectorAll(".thumb-tab");
+      if (!btns.length) return;
+      const map = {};
+      btns.forEach(b => {
+        if (b.dataset && b.dataset.zbt && b.offsetWidth) {
+          map[b.dataset.zbt] = { w: Math.max(18, b.offsetWidth), left: b.offsetLeft || 0 };
+        }
+      });
+      if (Object.keys(map).length) THUMB_NAV_CACHE = map;
+    }
+    const act = tabs.querySelector(".thumb-tab.active");
+    const met = act && act.dataset && THUMB_NAV_CACHE && THUMB_NAV_CACHE[act.dataset.zbt];
+    if (!met) return;
+    if (immediate) bar.style.transition = "none";
+    bar.style.width = `${met.w}px`;
+    bar.style.transform = `translate3d(${met.left}px, 0, 0)`;
+    if (immediate) {
+      if (typeof requestAnimationFrame === "function") requestAnimationFrame(() => { bar.style.transition = ""; });
+      else bar.style.transition = "";
+    }
+  };
+  if (immediate || THUMB_NAV_CACHE) apply();
+  else if (typeof requestAnimationFrame === "function") requestAnimationFrame(apply);
+  else apply();
 }
-window.addEventListener("resize", () => positionThumbNavBar(true));
+window.addEventListener("resize", () => { THUMB_NAV_CACHE = null; positionThumbNavBar(true); });
 
 function renderStandaloneHorizon() {
   if (!window.ZB) return;
@@ -2453,16 +2748,35 @@ window.ZB = (function() {
     return { lbf, lwt, bbf, avgWt, avgBf, lWaist };
   }
 
+  let SUB_BAR_CACHE = null;
   function positionSubBar(immediate) {
     const wrap = ge("zb-subtabs"), bar = ge("zb-sub-bar");
-    if (!wrap || !bar || !wrap.offsetWidth) return;
-    const btn = wrap.querySelector ? wrap.querySelector(`.zb-subtab[data-zbt="${SUBTAB}"]`) : null;
-    if (!btn || !btn.offsetWidth) return;
-    if (immediate) bar.style.transition = "none";
-    bar.style.width = btn.offsetWidth + "px";
-    bar.style.transform = `translateX(${btn.offsetLeft || 0}px)`;
-    if (immediate) { void bar.offsetWidth; bar.style.transition = ""; }
+    if (!wrap || !bar) return;
+    const apply = () => {
+      if (!SUB_BAR_CACHE) {
+        if (!wrap.offsetWidth) return;
+        const map = {};
+        SUB_ORDER.forEach(k => {
+          const btn = wrap.querySelector ? wrap.querySelector(`.zb-subtab[data-zbt="${k}"]`) : null;
+          if (btn && btn.offsetWidth) map[k] = { w: btn.offsetWidth, left: btn.offsetLeft || 0 };
+        });
+        if (Object.keys(map).length) SUB_BAR_CACHE = map;
+      }
+      const met = SUB_BAR_CACHE && SUB_BAR_CACHE[SUBTAB];
+      if (!met) return;
+      if (immediate) bar.style.transition = "none";
+      bar.style.width = met.w + "px";
+      bar.style.transform = `translate3d(${met.left}px, 0, 0)`;
+      if (immediate) {
+        if (typeof requestAnimationFrame === "function") requestAnimationFrame(() => { bar.style.transition = ""; });
+        else bar.style.transition = "";
+      }
+    };
+    if (immediate || SUB_BAR_CACHE) apply();
+    else if (typeof requestAnimationFrame === "function") requestAnimationFrame(apply);
+    else apply();
   }
+  window.addEventListener("resize", () => { SUB_BAR_CACHE = null; });
 
   function applyBodyHead(today, wb, pt) {
     const bfEl = ge("zb-bf-big"), wtEl = ge("zb-wt-big"), ctxEl = ge("zb-bctx");
@@ -2873,8 +3187,24 @@ window.ZB = (function() {
     GESTURES_BOUND = true;
     const stage = ge("zb-stage"), ptr = ge("zb-ptr"), ptrArc = ge("zb-ptr-arc"), ptrLbl = ge("zb-ptr-lbl");
     if (stage && stage.addEventListener) {
-      let trk = false, mode = "", sx = 0, sy = 0, t0 = 0, ldx = 0, ldy = 0, busy = false;
+      let trk = false, mode = "", sx = 0, sy = 0, t0 = 0, ldx = 0, ldy = 0, busy = false, gRaf = 0;
       const toLocal = (dx, dy) => (typeof FP_ANGLE !== "undefined" && FP_ANGLE === 90) ? { dx: -dy, dy: dx } : ((typeof FP_ANGLE !== "undefined" && FP_ANGLE === 270) ? { dx: dy, dy: -dx } : { dx, dy });
+      const applyGestureFrame = () => {
+        gRaf = 0;
+        if (!trk) return;
+        if (mode === "h") {
+          const idx = SUB_ORDER.indexOf(SUBTAB);
+          const edge = (idx === 0 && ldx > 0) || (idx === SUB_ORDER.length - 1 && ldx < 0);
+          const dm = edge ? ldx * 0.16 : Math.max(-68, Math.min(68, ldx * 0.42));
+          const ap = ge("zb-p-" + SUBTAB);
+          if (ap) { ap.style.transition = "none"; ap.style.transform = `translate3d(${dm.toFixed(1)}px, 0, 0)`; }
+        } else if (mode === "ptr" && ldy > 0) {
+          const pull = Math.min(56, ldy * 0.48), pct = Math.min(100, Math.round((pull / 46) * 100));
+          if (ptr) { ptr.style.height = `${pull.toFixed(0)}px`; ptr.style.opacity = `${Math.min(1, pull / 30).toFixed(2)}`; }
+          if (ptrArc) ptrArc.setAttribute("stroke-dasharray", `${pct} 100`);
+          if (ptrLbl) ptrLbl.textContent = pull >= 46 ? "松手立即同步" : "下拉同步";
+        }
+      };
       stage.addEventListener("touchstart", e => {
         if (!e.touches || e.touches.length !== 1 || busy) return;
         if (e.target && e.target.closest && e.target.closest("[data-zb-noswipe], input, textarea")) return;
@@ -2890,24 +3220,16 @@ window.ZB = (function() {
           else if (ldy > 0 && stage.scrollTop <= 0) { mode = "ptr"; if (ptr) ptr.classList.add("dragging"); }
           else { mode = "v"; return; }
         }
-        if (mode === "h") {
-          e.preventDefault();
-          const idx = SUB_ORDER.indexOf(SUBTAB);
-          const edge = (idx === 0 && ldx > 0) || (idx === SUB_ORDER.length - 1 && ldx < 0);
-          const dm = edge ? ldx * 0.16 : Math.max(-68, Math.min(68, ldx * 0.42));
-          const ap = ge("zb-p-" + SUBTAB);
-          if (ap) { ap.style.transition = "none"; ap.style.transform = `translateX(${dm.toFixed(1)}px)`; }
-        } else if (mode === "ptr" && ldy > 0) {
-          e.preventDefault();
-          const pull = Math.min(56, ldy * 0.48), pct = Math.min(100, Math.round((pull / 46) * 100));
-          if (ptr) { ptr.style.height = `${pull.toFixed(0)}px`; ptr.style.opacity = `${Math.min(1, pull / 30).toFixed(2)}`; }
-          if (ptrArc) ptrArc.setAttribute("stroke-dasharray", `${pct} 100`);
-          if (ptrLbl) ptrLbl.textContent = pull >= 46 ? "松手立即同步" : "下拉同步";
+        if (mode === "h" || (mode === "ptr" && ldy > 0)) {
+          if (e.cancelable) e.preventDefault();
+          if (!gRaf && typeof requestAnimationFrame === "function") gRaf = requestAnimationFrame(applyGestureFrame);
+          else if (typeof requestAnimationFrame !== "function") applyGestureFrame();
         }
       }, { passive: false });
       const endG = async () => {
         if (!trk) return;
         trk = false;
+        if (gRaf && typeof cancelAnimationFrame === "function") { cancelAnimationFrame(gRaf); gRaf = 0; }
         if (mode === "h") {
           const dt = Date.now() - t0, idx = SUB_ORDER.indexOf(SUBTAB);
           const sr = ldx > 52 || (ldx > 26 && dt < 220), sl = ldx < -52 || (ldx < -26 && dt < 220);
@@ -2915,7 +3237,7 @@ window.ZB = (function() {
           else if (sr && idx > 0) window.ZB.setTab(SUB_ORDER[idx - 1], -1);
           else {
             const ap = ge("zb-p-" + SUBTAB);
-            if (ap) { ap.style.transition = "transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)"; ap.style.transform = "translateX(0)"; setTimeout(() => { ap.style.transition = ""; ap.style.transform = ""; }, 230); }
+            if (ap) { ap.style.transition = "transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)"; ap.style.transform = "translate3d(0, 0, 0)"; setTimeout(() => { ap.style.transition = ""; ap.style.transform = ""; }, 230); }
           }
         } else if (mode === "ptr") {
           if (ptr) ptr.classList.remove("dragging");
@@ -3212,7 +3534,7 @@ window.ZB = (function() {
       <div class="dock-row">
         <button type="button" class="sumi-btn" onclick="closeModal()">知道了</button>
       </div>`;
-    mm.classList.add("open");
+    showAppModal();
   }
 
   function openPeloGuide() {
@@ -3280,7 +3602,7 @@ window.ZB = (function() {
       <div class="dock-row">
         <button type="button" class="sumi-btn" onclick="closeModal()">返回</button>
       </div>`;
-    mm.classList.add("open");
+    showAppModal();
   }
 
   function openStateSheet() {
@@ -3318,6 +3640,16 @@ window.ZB = (function() {
         <button type="button" class="zb-sheet-pill ${sub === "sleep" ? "active is-ochre" : ""}" onclick="ZB.pickState('tired','sleep',false)">没睡好</button>
         <button type="button" class="zb-sheet-pill ${sub === "sore" ? "active is-red" : ""}" onclick="ZB.pickState('tired','sore',false)">腿酸发沉</button>
       </div>` : "";
+    const installRow = !isStandaloneApp()
+      ? `<div class="install-app-row" id="install-app-row">
+           <div class="install-app-copy">
+             <div class="install-app-title">安装到主屏幕</div>
+             <div class="install-app-sub">去掉浏览器地址栏，全屏更像原生 App</div>
+           </div>
+           <button type="button" class="install-app-btn" onclick="triggerPwaInstall()">安装</button>
+         </div>
+         <div class="install-app-hint" id="install-app-hint" style="display:none;"></div>`
+      : "";
     mc.innerHTML = `
       <h3 class="modal-h">今日状态</h3>
       <p class="zb-sheet-sub">按真实体感或行程轻点一下，今日安排自动重算。</p>
@@ -3362,10 +3694,11 @@ window.ZB = (function() {
           </button>
         </div>
       </div>
+      ${installRow}
       <div class="dock-row">
         <button type="button" class="sumi-btn" onclick="closeModal()">完成</button>
       </div>`;
-    mm.classList.add("open");
+    showAppModal();
   }
 
   function openBandGuide() {
@@ -3446,9 +3779,13 @@ window.ZB = (function() {
         el.classList.remove("zb-slide-r", "zb-slide-l");
         el.style.transform = ""; el.style.transition = "";
         el.classList.toggle("active", k === t);
-        if (k === t) { void el.offsetWidth; el.classList.add(dir > 0 ? "zb-slide-r" : "zb-slide-l"); }
+        if (k === t) el.classList.add(dir > 0 ? "zb-slide-r" : "zb-slide-l");
       });
-      const st = ge("zb-stage"); if (st) st.scrollTop = 0;
+      const st = ge("zb-stage");
+      if (st) {
+        if (typeof requestAnimationFrame === "function") requestAnimationFrame(() => { st.scrollTop = 0; });
+        else st.scrollTop = 0;
+      }
       if (t === "body") renderChart();
       positionSubBar(false);
     },
