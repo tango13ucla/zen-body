@@ -820,9 +820,9 @@
   .zb-waist-in:focus { border-bottom-color: var(--moss); border-bottom-style: solid; }
   .zb-waist-in::placeholder { font-family: var(--sans); font-size: 12.5px; font-weight: 400; color: var(--ink-3); }
 
-  .zb-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 14px 0 18px; border-bottom: 1px solid var(--hairline); margin-bottom: 4px; }
+  .zb-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 14px 0 18px; border-bottom: 1px solid var(--hairline); margin-bottom: 4px; }
   .zb-kpi-v { font-family: var(--sans); font-size: 21px; font-weight: 300; color: var(--sumi); font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .zb-kpi-l { font-size: 11.5px; color: var(--ink-3); margin-top: 4px; letter-spacing: 0.03em; }
+  .zb-kpi-l { font-size: 11px; color: var(--ink-3); margin-top: 4px; letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .zb-ledger-list { margin-top: 2px; }
   .zb-ledger-item { border-bottom: 1px solid var(--hairline); }
   .zb-ledger-row { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 12.5px 0; font-size: 13.5px; gap: 10px; text-align: left; }
@@ -844,34 +844,40 @@
   .zb-sync-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex-wrap: wrap; }
 
   .zb-guide-list { display: flex; flex-direction: column; margin: 4px 0 16px; border-top: 1px solid var(--hairline); }
-  .zb-guide-item { padding: 13px 0; border-bottom: 1px solid var(--hairline); }
-  .zb-guide-k { font-size: 12px; font-weight: 500; color: var(--moss); letter-spacing: 0.06em; margin-bottom: 5px; }
-  .zb-guide-v { font-size: 14.5px; line-height: 1.62; color: var(--sumi); }
-  .zb-guide-sub { font-size: 13px; line-height: 1.55; color: var(--ink-3); margin-top: 4px; }
-  .zb-guide-item.cur .zb-guide-k::before { content: "● "; font-size: 9px; }
+  .zb-guide-item { padding: 14px 0; border-bottom: 1px solid var(--hairline); }
+  .zb-guide-k { font-size: 12px; font-weight: 500; color: var(--moss); letter-spacing: 0.05em; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .zb-guide-v { font-size: 14.5px; line-height: 1.6; color: var(--sumi); text-wrap: pretty; }
+  .zb-guide-sub { font-size: 13px; line-height: 1.56; color: var(--ink-3); margin-top: 4px; text-wrap: pretty; }
+  .zb-guide-item.cur .zb-guide-k > span:first-child::before { content: "● "; font-size: 9px; margin-right: 2px; }
+  .zb-guide-item.is-foldable { cursor: pointer; }
+  .zb-guide-item.is-collapsed .zb-guide-v,
+  .zb-guide-item.is-collapsed .zb-guide-sub { display: none; }
+  .zb-guide-item.is-collapsed .zb-guide-k { margin-bottom: 0; color: var(--ink-3); font-weight: 400; }
+  .zb-guide-chev { font-size: 13px; color: var(--ink-3); opacity: 0.6; flex-shrink: 0; transition: transform 0.2s ease; }
+  .zb-guide-item.is-foldable:not(.is-collapsed) .zb-guide-chev { transform: rotate(180deg); }
 
   .zb-modal-links { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: -4px 0 14px; flex-wrap: wrap; }
   .zb-pz-tabs { display: flex; gap: 18px; margin: 2px 0 12px; border-bottom: 1px solid var(--hairline); }
   .zb-pz-tab { font-size: 13.5px; font-weight: 400; color: var(--ink-3); padding: 6px 0 8px; border-bottom: 1.5px solid transparent; }
   .zb-pz-tab.active { color: var(--sumi); font-weight: 500; border-bottom-color: var(--sumi); }
-  .zb-pz-prog { margin: 0 0 12px; }
+  .zb-pz-prog { margin: 0 0 10px; }
   .zb-pz-prog-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; margin-bottom: 6px; }
   .zb-pz-prog-track { width: 100%; height: 2px; background: var(--track); border-radius: 2px; overflow: hidden; }
   .zb-pz-prog-fill { height: 100%; background: var(--moss); border-radius: 2px; transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
-  .zb-pz-note { font-size: 12.5px; color: var(--ink-3); line-height: 1.55; margin: 0 0 12px; }
-  .zb-pz-list { display: flex; flex-direction: column; margin-bottom: 16px; max-height: 46vh; overflow-y: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .zb-pz-note { font-size: 12px; color: var(--ink-3); line-height: 1.5; margin: 0 0 10px; }
+  .zb-pz-list { display: flex; flex-direction: column; margin-bottom: 16px; max-height: 50vh; overflow-y: auto; padding-bottom: 16px; -webkit-overflow-scrolling: touch; scrollbar-width: none; -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 22px), transparent 100%); mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 22px), transparent 100%); }
   .zb-pz-list::-webkit-scrollbar { display: none; }
-  .zb-pz-wk { font-size: 11.5px; font-weight: 500; color: var(--ink-3); letter-spacing: 0.06em; padding: 12px 0 6px; border-bottom: 1px solid var(--hairline); }
-  .zb-pz-row { width: 100%; display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--hairline); text-align: left; }
+  .zb-pz-wk { font-size: 11.5px; font-weight: 500; color: var(--ink-3); letter-spacing: 0.06em; padding: 14px 0 6px; border-bottom: 1px solid var(--hairline); }
+  .zb-pz-row { width: 100%; display: flex; align-items: flex-start; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--hairline); text-align: left; }
   .zb-pz-row:active { opacity: 0.7; }
   .zb-pz-mark { width: 16px; flex-shrink: 0; font-size: 12.5px; color: var(--ink-3); text-align: center; padding-top: 2px; }
   .zb-pz-row.done .zb-pz-mark { color: var(--moss); font-weight: 500; }
   .zb-pz-row.cur .zb-pz-mark { color: var(--moss); }
   .zb-pz-info { flex: 1; min-width: 0; }
-  .zb-pz-name { font-size: 13.5px; line-height: 1.45; color: var(--sumi); }
+  .zb-pz-name { font-size: 14px; line-height: 1.45; color: var(--sumi); }
   .zb-pz-row.done .zb-pz-name { color: var(--ink-3); }
   .zb-pz-row.cur .zb-pz-name { color: var(--sumi); font-weight: 500; }
-  .zb-pz-meta { font-size: 12px; color: var(--ink-3); margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .zb-pz-meta { font-size: 12px; color: var(--ink-3); margin-top: 3px; font-variant-numeric: tabular-nums; }
   .zb-pz-min { flex-shrink: 0; font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; padding-top: 2px; }
 
   .zb-ledger-pz { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--hairline); font-size: 13.5px; text-align: left; }
@@ -2063,19 +2069,19 @@ window.ZB = (function() {
 
   function makePZPlan(opts) {
     const cur = opts.cur, next = getPZMeta(Math.min(PZ_LIST.length, cur.idx + 1));
-    const langTip = cur.pIdx === 0 ? "（勿进教练页、避开德语 DE 版；看不到英文版点左下角头像 → Preferences → Class Languages 开启 English）" : "";
+    const langTip = cur.pIdx === 0 ? "（避开德语 DE 版）" : "";
     const progSub = cur.allDone
-      ? "两套官方 Power Zone 项目已全部通关，按自己节奏保持稳态燃脂即可。"
-      : `当前进度 ${cur.doneInProg} / ${cur.progTotal} 节（每周稳推 2–3 节，打球多的周 1–2 节就很好，约 8–10 周从容通关，绝不照官方 5 周硬追）。`;
+      ? "两套 Power Zone 已全部通关，按节奏保持即可。"
+      : `进度 ${cur.doneInProg} / ${cur.progTotal} 节，每周稳推 2–3 节，约 8–10 周从容通关。`;
     const pzeCue = ((cur.kind === "pze" || cur.kind === "pze_long") && PROF && PROF.pze_media_tip) ? PROF.pze_media_tip : cur.cue;
     const items = [
       { k: "今天骑这节", v: `${cur.title}（${cur.coach} · ${cur.min} 分钟）`, sub: pzeCue, cur: true },
-      { k: "Bike+ 一步找到", v: cur.entry, sub: (opts.extraNote || "状态好就照这节骑；如果今天累了随时点「偏累」或「休息日」，不勉强。") + langTip }
+      { k: "Bike+ 找课入口", v: cur.entry + langTip, sub: opts.extraNote || "累了随时切「偏累」或「休息日」，不勉强。" }
     ];
     if (opts.vitalsLine) {
-      items.push({ k: "手表与秤实时状态", v: opts.vitalsLine, sub: "已结合你最新的静息心率、HRV、睡眠和运动负荷排课。" });
+      items.push({ k: "手表与秤状态", v: opts.vitalsLine, sub: "已结合最新静息心率、HRV 与睡眠排课。" });
     }
-    items.push({ k: "慢节奏推进", v: `${cur.progName}（${cur.doneInProg}/${cur.progTotal}）`, sub: progSub });
+    items.push({ k: "主线进度", v: `${cur.progName}（${cur.doneInProg}/${cur.progTotal}）`, sub: progSub });
     return {
       tier: opts.tier || "green",
       tierText: opts.tierText,
@@ -2167,6 +2173,7 @@ window.ZB = (function() {
     if (trip && !forcePZ && st.mode === "normal") {
       const tripDays = Math.max(1, daysDiff(trip.start, trip.end) + 1);
       const isLongTrip = tripDays > 5;
+      const shortTrip = String(trip.name || "").replace(/\s*(感恩节|春节|圣诞|寒假|假期|行程|周末|度假|之旅).*$/, "").trim() || trip.name;
       const tItems = [
         { k: "旅途心肺", v: "每天自然步行即算达标，不碰单车不焦虑", sub: "出门前、返程在家或酒店有单车时，点下方「想骑 Peloton」随时切回主线。", cur: true }
       ];
@@ -2183,7 +2190,7 @@ window.ZB = (function() {
         sub: "Peloton 新版项目支持暂停顺延，回来直接接上。"
       });
       return {
-        tier: "green", tierText: `旅途中 · ${trip.name}`,
+        tier: "green", tierText: `旅途中 · ${shortTrip}`,
         title: "旅途轻松步行",
         shortLine: isLongTrip
           ? `主线暂存在 ${cur.code}，隔两天可做 8 分钟徒手`
@@ -3140,7 +3147,7 @@ window.ZB = (function() {
     const rhrStale = staleTag(vt.rhr_date);
     const rhrSub = rhrStale ? (`静息${rhrStale}`) : "静息心率";
     const hrvStale = staleTag(vt.hrv_date);
-    const hrvSub = hrvStale ? (`HRV${hrvStale}`) : (vt.hrv_7d ? `HRV · 7日 ${vt.hrv_7d}` : "HRV");
+    const hrvSub = hrvStale ? (`HRV${hrvStale}`) : (vt.hrv_7d ? `HRV 均${vt.hrv_7d}` : "HRV");
     const slpSub = "睡眠" + staleTag(vt.sleep_date);
     if (kp) {
       kp.innerHTML =
@@ -3564,13 +3571,20 @@ window.ZB = (function() {
     return wb.lbf ? `GE <b>${wb.lbf[2].toFixed(1)}%</b> → ${tgt}%` : `目标 <b>${tgt}%</b>`;
   }
 
-  function showGuideModal(title, items, extraLinksHtml) {
+  function showGuideModal(title, items, extraLinksHtml, opts) {
     const mc = ge("modal-content"), mm = ge("app-modal");
     if (!mc || !mm) return;
+    const foldable = !!(opts && opts.foldable);
     mc.innerHTML = `
       <h3 class="modal-h">${escapeHtml(title)}</h3>
       <div class="zb-guide-list">
-        ${items.map(it => `<div class="zb-guide-item${it.cur ? " cur" : ""}"><div class="zb-guide-k">${escapeHtml(it.k)}</div><div class="zb-guide-v">${escapeHtml(it.v)}</div>${it.sub ? `<div class="zb-guide-sub">${escapeHtml(it.sub)}</div>` : ""}</div>`).join("")}
+        ${items.map(it => {
+          const canFold = foldable && !it.cur;
+          const cls = `zb-guide-item${it.cur ? " cur" : ""}${canFold ? " is-foldable is-collapsed" : ""}`;
+          const foldAttr = canFold ? ` onclick="this.classList.toggle('is-collapsed')"` : "";
+          const chev = canFold ? `<span class="zb-guide-chev" aria-hidden="true">▾</span>` : "";
+          return `<div class="${cls}"${foldAttr}><div class="zb-guide-k"><span>${escapeHtml(it.k)}</span>${chev}</div><div class="zb-guide-v">${escapeHtml(it.v)}</div>${it.sub ? `<div class="zb-guide-sub">${escapeHtml(it.sub)}</div>` : ""}</div>`;
+        }).join("")}
       </div>
       ${extraLinksHtml ? `<div class="zb-modal-links">${extraLinksHtml}</div>` : ""}
       <div class="dock-row">
@@ -3604,7 +3618,6 @@ window.ZB = (function() {
     const curMeta = getPZMeta(curIdx);
     const pIdx = (progHint === 0 || progHint === 1) ? progHint : curMeta.pIdx;
     PZ_VIEW_PROG = pIdx;
-    const prog = PZ_PROGS[pIdx];
     const chMap = PZ_CH_LABELS[pIdx] || {};
     const progTotal = pIdx === 0 ? 23 : 24;
     const progDone = pIdx === 0 ? Math.min(23, curIdx) : Math.max(0, Math.min(24, curIdx - 23));
@@ -3627,8 +3640,8 @@ window.ZB = (function() {
       </button>`;
     }
     const paceNote = pIdx === 0
-      ? `你每周还打 2–4 场球，绝不按官方纯骑车的 5 周硬追。每周稳推 2–3 节（球多时 1–2 节），约 8–10 周从容通关；${prog.entry}，Peloton 新版自由推进不锁课，点任意一节可校准进度。`
-      : `全 Zone 2–3 稳态燃脂，每周 2–3 节即可（75/90 分长课仅限周末不打球日，累了可换 45 分）。${prog.entry}。点任意一节可校准进度。`;
+      ? "每周稳推 2–3 节 · 点任意节校准进度"
+      : "每周 2–3 节稳态燃脂 · 点任意节校准进度";
     mc.innerHTML = `
       <h3 class="modal-h">Power Zone 完整主线课表</h3>
       <div class="zb-pz-tabs">
@@ -3640,11 +3653,18 @@ window.ZB = (function() {
         <div class="zb-pz-prog-track"><div class="zb-pz-prog-fill" style="width:${Math.max(progDone ? 4 : 0, progPct)}%;"></div></div>
       </div>
       <p class="zb-pz-note">${escapeHtml(paceNote)}</p>
-      <div class="zb-pz-list">${rowsHtml}</div>
+      <div class="zb-pz-list" id="zb-pz-list-scroll">${rowsHtml}</div>
       <div class="dock-row">
         <button type="button" class="sumi-btn" onclick="closeModal()">返回</button>
       </div>`;
     showAppModal();
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(() => {
+        const listEl = ge("zb-pz-list-scroll");
+        const curEl = listEl && listEl.querySelector && listEl.querySelector(".zb-pz-row.cur");
+        if (curEl && typeof curEl.scrollIntoView === "function") curEl.scrollIntoView({ block: "center" });
+      });
+    }
   }
 
   function openStateSheet() {
@@ -3747,14 +3767,14 @@ window.ZB = (function() {
     const stg = puStage();
     const bIdx = stg.idx === 0 ? 0 : (stg.idx === 1 ? 1 : 2);
     const items = [
-      { k: "阶段一 · 1 徒手起步", v: "黑带 25–65 lb（单膝约 10–15 kg）", sub: "每轮 1 个徒手 + 2 个单膝挂黑带 4 秒慢放，每日 2 轮。", cur: bIdx === 0 },
-      { k: "阶段二 · 2 徒手过渡", v: "红细带 15–35 lb（单膝约 5–8 kg）", sub: "稳拉 2 个纯徒手后降档，每轮 2 徒手 + 1 红带慢放，每日 2 轮。", cur: bIdx === 1 },
-      { k: "阶段三 · 3 连冲 5 连（不力竭多组法）", v: "彻底拆绳 0 lb · 留 1 下余力拉 3 轮", sub: "稳拉 3 个后不再每轮拉满力竭：平时每次轻松拉 2 个、隔 2 小时拉 3 轮（攒 6 下高质量纯拉），每两周满血测一次冲 4 连、5 连。", cur: bIdx === 2 }
+      { k: "阶段一 · 1 徒手起步", v: "黑带 25–65 lb（单膝约 10–15 kg）", sub: "每轮 1 个徒手 + 2 个单膝黑带 4 秒慢放，每日 2 轮。", cur: bIdx === 0 },
+      { k: "阶段二 · 2 徒手过渡", v: "红细带 15–35 lb（单膝约 5–8 kg）", sub: "稳拉 2 个纯徒手后降档，每轮 2 徒手 + 1 红带慢放。", cur: bIdx === 1 },
+      { k: "阶段三 · 3 连冲 5 连", v: "拆绳 0 lb · 留余力多轮法", sub: "平时每次轻松拉 2 个、隔 2 小时拉 3 轮，每两周满血测一次冲 4–5 连。", cur: bIdx === 2 }
     ];
     if (PROF && PROF.strength_stretch_note && PROF.strength_stretch_note.v) {
       items.push(PROF.strength_stretch_note);
     }
-    showGuideModal("弹力带换绳与冲 5 连路线", items);
+    showGuideModal("弹力带换绳与冲 5 连路线", items, "", { foldable: true });
   }
 
   function openProteinGuide() {
@@ -3777,9 +3797,9 @@ window.ZB = (function() {
       return;
     }
     showGuideModal(`每日蛋白锚点 · 目标 ${pLo}–${pHi}g`, [
-      { k: "为什么必须吃够", v: `按你近期均重 ${wt.toFixed(1)} kg，减脂护肌甜点约 ${pMid}g / 天`, sub: "多项减脂随机试验（Longland 2016 / Morton 2018）证实：体脂往 14% 压时，每天吃够 1.6–2.0 g/kg 蛋白，掉的才主要是脂肪而不是肌肉。", cur: true },
-      { k: "日常顺手凑够 145g 参考", v: "乳清蛋白 1 勺 ≈ 25g · 鸡胸/三文鱼/瘦牛 200g ≈ 45g", sub: "3 个全蛋 ≈ 20g · 一杯希腊酸奶 ≈ 18g · 一盒嫩豆腐/毛豆 ≈ 15g。早晚各 1 份高蛋白 + 午晚正餐有肉鱼，轻松过线。" },
-      { k: "配合晚间节律", v: "晚餐先吃蛋白与青菜，睡前 3 小时不爆高糖高油碳水", sub: "蛋白本身饱腹感极强，不用饿肚子也能稳稳守住热量缺口。" }
+      { k: "每天吃够才护肌", v: `按近期均重 ${wt.toFixed(1)} kg，减脂护肌甜点约 ${pMid}g / 天`, sub: "往 14% 压体脂时吃够 1.6–2.0 g/kg 蛋白，掉的才主要是脂肪而不是肌肉。", cur: true },
+      { k: "顺手凑够 145g 参考", v: "乳清 1 勺 25g · 鸡胸/三文鱼/瘦牛 200g 约 45g", sub: "3 个全蛋 20g · 希腊酸奶 18g · 嫩豆腐/毛豆 15g。早晚高蛋白配正餐肉鱼，轻松过线。" },
+      { k: "晚间节律", v: "晚餐先吃蛋白和青菜，睡前 3 小时不碰高糖油碳水", sub: "饱腹感稳，不饿肚子也能守住缺口。" }
     ]);
   }
 

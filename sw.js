@@ -1,4 +1,4 @@
-const CACHE_NAME = "zen-body-shell-v7";
+const CACHE_NAME = "zen-body-shell-v8";
 const IMMUTABLE_CACHE = "zen-immutable-v1";
 const SHELL_ASSETS = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
